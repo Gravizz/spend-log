@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import type { LayoutProps } from './$types';
 	import '../app.css';
 
@@ -9,17 +10,26 @@
 	<title>บันทึกรายรับรายจ่าย</title>
 </svelte:head>
 
-{#if data.authed}
-	<header>
-		<strong>บันทึกรายรับรายจ่าย</strong>
-		<a href="/">รายการ</a>
-		<a href="/categories">หมวด</a>
-		<form method="post" action="/logout">
-			<button class="ghost" type="submit">ออกจากระบบ</button>
-		</form>
-	</header>
-{/if}
+<div class:app={data.authed}>
+	{#if data.authed}
+		<header>
+			<strong>บันทึก</strong>
+			<form method="post" action="/logout">
+				<button class="ghost" type="submit">ออกจากระบบ</button>
+			</form>
+		</header>
+		<nav class="tabs">
+			<a href="/" aria-current={page.url.pathname === '/' ? 'page' : undefined}>รายการ</a>
+			<a
+				href="/categories"
+				aria-current={page.url.pathname.startsWith('/categories') ? 'page' : undefined}
+			>
+				หมวด
+			</a>
+		</nav>
+	{/if}
 
-<main>
-	{@render children()}
-</main>
+	<main>
+		{@render children()}
+	</main>
+</div>

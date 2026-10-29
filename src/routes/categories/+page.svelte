@@ -24,20 +24,23 @@
 {/if}
 
 {#if data.categories.length === 0}
-	<p class="muted">ยังไม่มีหมวด</p>
+	<p class="muted">ยังไม่มีหมวด เพิ่มชื่อด้านบนก่อนบันทึกรายการ</p>
 {:else}
 	<ul class="plain">
 		{#each data.categories as category (category.id)}
-			<li class="row">
-				<form method="post" action="?/rename" class="grow">
+			<li class="cat">
+				<span class="chip {category.kind}">{category.kind === 'in' ? 'รายรับ' : 'รายจ่าย'}</span>
+				<form method="post" action="?/rename" class="cat-edit">
 					<input type="hidden" name="id" value={category.id} />
-					<input name="name" value={category.name} required maxlength="40" />
-					<span class={category.kind}>{category.kind === 'in' ? 'รายรับ' : 'รายจ่าย'}</span>
-					<button>บันทึกชื่อ</button>
+					<label>
+						ชื่อ
+						<input name="name" value={category.name} required maxlength="40" />
+					</label>
+					<button type="submit">บันทึกชื่อ</button>
 				</form>
 				<form method="post" action="?/remove">
 					<input type="hidden" name="id" value={category.id} />
-					<button class="ghost" type="submit">ลบ</button>
+					<button class="danger" type="submit">ลบหมวด</button>
 				</form>
 			</li>
 		{/each}

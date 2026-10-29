@@ -11,27 +11,31 @@
 		form?.amount ?? (editing ? (editing.amount_satang / 100).toFixed(2) : '')
 	);
 	const note = $derived(form?.note ?? editing?.note ?? '');
+
+	function formatDay(iso: string) {
+		const [year, month, day] = iso.split('-').map(Number);
+		return new Intl.DateTimeFormat('th-TH-u-ca-gregory', {
+			day: 'numeric',
+			month: 'short'
+		}).format(new Date(year, month - 1, day));
+	}
 </script>
 
 <div class="month-nav">
-	<a href="?m={data.prev}">เดือนก่อน</a>
+	<a href="?m={data.prev}">ก่อน</a>
 	<h1>{data.label}</h1>
-	<a href="?m={data.next}">เดือนถัดไป</a>
+	<a href="?m={data.next}">ถัดไป</a>
 </div>
 
-<section class="cards">
-	<article class="card">
-		<p class="muted">รวมรับ</p>
-		<p class="in">{formatBaht(data.income)}</p>
-	</article>
-	<article class="card">
-		<p class="muted">รวมจ่าย</p>
-		<p class="out">{formatBaht(data.expense)}</p>
-	</article>
-	<article class="card">
-		<p class="muted">คงเหลือ</p>
-		<p class={data.net < 0 ? 'out' : 'in'}>{formatBaht(data.net)}</p>
-	</article>
+<section class="tally" aria-label="สรุปเดือนนี้">
+	<div>
+		<span class="muted">คงเหลือ</span>
+		<strong class={data.net < 0 ? 'out' : 'in'}>{formatBaht(data.net)}</strong>
+	</div>
+	<div class="tally-side">
+		<span>รับ <b class="in">{formatBaht(data.income)}</b></span>
+		<span>จ่าย <b class="out">{formatBaht(data.expense)}</b></span>
+	</div>
 </section>
 
 {#if data.byCategory.length > 0}
@@ -39,14 +43,43 @@
 		<h2>แยกตามหมวด</h2>
 		<ul class="plain">
 			{#each data.byCategory as row (row.id)}
-				<li class="row">
+				<li class="split">
 					<span>{row.name}</span>
-					<span class={row.kind}>{formatBaht(row.total)}</span>
+					<span class="{row.kind} amount">{formatBaht(row.total)}</span>
 				</li>
 			{/each}
 		</ul>
 	</section>
 {/if}
+
+<section>
+	<h2>รายการ</h2>
+	{#if data.entries.length === 0}
+		<p class="muted">เดือนนี้ยังไม่มีรายการ เพิ่มรายการแรกด้านล่าง</p>
+	{:else}
+		<ul class="plain">
+			{#each data.entries as entry (entry.id)}
+				<li class="entry">
+					<div>
+						<div>{formatDay(entry.occurred_on)} {entry.name}</div>
+						{#if entry.note}<div class="muted">{entry.note}</div>{/if}
+					</div>
+					<div class="{entry.kind} amount">
+						{entry.kind === 'in' ? '+' : '−'}{formatBaht(entry.amount_satang)}
+					</div>
+					<div class="entry-actions">
+						<a class="quiet" href="?m={data.month}&edit={entry.id}">แก้</a>
+						<form method="post" action="?/remove">
+							<input type="hidden" name="id" value={entry.id} />
+							<input type="hidden" name="m" value={data.month} />
+							<button class="danger" type="submit">ลบ</button>
+						</form>
+					</div>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+</section>
 
 <section>
 	<h2>{editing ? 'แก้รายการ' : 'เพิ่มรายการ'}</h2>
@@ -57,10 +90,16 @@
 			{#if editing}
 				<input type="hidden" name="id" value={editing.id} />
 			{/if}
-			<label>
-				วันที่
-				<input type="date" name="occurred_on" required value={occurredOn} />
-			</label>
+			<div class="pair">
+				<label>
+					วันที่
+					<input type="date" name="occurred_on" required value={occurredOn} />
+				</label>
+				<label>
+					จำนวนเงิน (บาท)
+					<input name="amount" inputmode="decimal" required value={amount} />
+				</label>
+			</div>
 			<label>
 				หมวด
 				<select name="category_id" required>
@@ -73,49 +112,18 @@
 				</select>
 			</label>
 			<label>
-				จำนวนเงิน (บาท)
-				<input name="amount" inputmode="decimal" required value={amount} />
-			</label>
-			<label>
 				โน้ต
 				<input name="note" maxlength="200" value={note} />
 			</label>
 			{#if form?.error}
 				<p class="error">{form.error}</p>
 			{/if}
-			<div class="buttons">
-				<button>{editing ? 'บันทึกการแก้' : 'เพิ่ม'}</button>
+			<div class="actions">
+				<button>{editing ? 'บันทึกการแก้' : 'เพิ่มรายการ'}</button>
 				{#if editing}
-					<a href="?m={data.month}">ยกเลิก</a>
+					<a class="quiet" href="?m={data.month}">ยกเลิก</a>
 				{/if}
 			</div>
 		</form>
-	{/if}
-</section>
-
-<section>
-	<h2>รายการ</h2>
-	{#if data.entries.length === 0}
-		<p class="muted">เดือนนี้ยังไม่มีรายการ</p>
-	{:else}
-		<ul class="plain">
-			{#each data.entries as entry (entry.id)}
-				<li class="row">
-					<div class="grow">
-						<div>{entry.occurred_on} · {entry.name}</div>
-						{#if entry.note}<div class="muted">{entry.note}</div>{/if}
-					</div>
-					<div class={entry.kind}>
-						{entry.kind === 'in' ? '+' : '−'}{formatBaht(entry.amount_satang)}
-					</div>
-					<a href="?m={data.month}&edit={entry.id}">แก้</a>
-					<form method="post" action="?/remove">
-						<input type="hidden" name="id" value={entry.id} />
-						<input type="hidden" name="m" value={data.month} />
-						<button class="ghost" type="submit">ลบ</button>
-					</form>
-				</li>
-			{/each}
-		</ul>
 	{/if}
 </section>
