@@ -22,9 +22,6 @@
 		'oklch(0.48 0.08 230)'
 	];
 
-	const arcs = $derived(donutArcs(data.months.map((month) => month.total)));
-	const total = $derived(data.months.reduce((sum, month) => sum + month.total, 0));
-
 	function monthName(month: string) {
 		const [year, index] = month.split('-').map(Number);
 		return new Intl.DateTimeFormat('th-TH-u-ca-gregory', { month: 'long' }).format(
@@ -37,8 +34,51 @@
 	}
 </script>
 
+{#snippet ring(title: string, months: { month: string; total: number }[], tone: string, empty: string)}
+	<section class="grid justify-items-center gap-3">
+		<h2 class={tone}>{title}</h2>
+		{#if months.length === 0}
+			<p class="text-muted">{empty}</p>
+		{:else}
+			{@const arcs = donutArcs(months.map((month) => month.total))}
+			{@const total = months.reduce((sum, month) => sum + month.total, 0)}
+			<div class="relative size-60">
+				<svg viewBox="0 0 42 42" class="size-full" aria-hidden="true">
+					<g transform="rotate(-90 21 21)">
+						{#each arcs as arc, index (months[index].month)}
+							<circle
+								cx="21"
+								cy="21"
+								r="16"
+								fill="none"
+								stroke={sliceColor(months[index].month)}
+								stroke-width="8"
+								pathLength="100"
+								stroke-dasharray="{arc.length} {100 - arc.length}"
+								stroke-dashoffset={-arc.offset}
+							/>
+						{/each}
+					</g>
+				</svg>
+				<p class="absolute inset-0 grid place-items-center px-10 text-center text-[1.15rem] {tone}">
+					{formatBaht(total)}
+				</p>
+			</div>
+			<ul class="m-0 w-full list-none p-0">
+				{#each months as month (month.month)}
+					<li class="flex items-center gap-3 border-b border-line py-3">
+						<span class="size-3 shrink-0 rounded-full" style="background: {sliceColor(month.month)}"></span>
+						<a class="min-w-0 flex-1 text-ink no-underline" href="/?m={month.month}">{monthName(month.month)}</a>
+						<span class={tone}>{formatBaht(month.total)}</span>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</section>
+{/snippet}
+
 <div class="sticky top-0 z-10 -mx-4 -mt-3.5 mb-4 bg-bg px-4 pt-3.5 pb-2">
-	<h1>การใช้เงิน</h1>
+	<h1>สรุปปี</h1>
 	<div class="mt-2 flex items-center justify-between gap-2">
 		<p class="text-[1.6rem] leading-none">{data.year}</p>
 		<div class="flex gap-1.5">
@@ -60,38 +100,7 @@
 	</div>
 </div>
 
-{#if data.months.length === 0}
-	<p class="text-muted">ปีนี้ยังไม่มีการใช้เงิน</p>
-{:else}
-	<div class="relative mx-auto size-64">
-		<svg viewBox="0 0 42 42" class="size-full" aria-hidden="true">
-			<g transform="rotate(-90 21 21)">
-				{#each arcs as arc, index (data.months[index].month)}
-					<circle
-						cx="21"
-						cy="21"
-						r="16"
-						fill="none"
-						stroke={sliceColor(data.months[index].month)}
-						stroke-width="8"
-						pathLength="100"
-						stroke-dasharray="{arc.length} {100 - arc.length}"
-						stroke-dashoffset={-arc.offset}
-					/>
-				{/each}
-			</g>
-		</svg>
-		<p class="absolute inset-0 grid place-items-center px-10 text-center text-[1.15rem] text-out">
-			{formatBaht(total)}
-		</p>
-	</div>
-	<ul class="m-0 mt-4 list-none p-0">
-		{#each data.months as month (month.month)}
-			<li class="flex items-center gap-3 border-b border-line py-3">
-				<span class="size-3 shrink-0 rounded-full" style="background: {sliceColor(month.month)}"></span>
-				<a class="min-w-0 flex-1 text-ink no-underline" href="/?m={month.month}">{monthName(month.month)}</a>
-				<span class="text-out">{formatBaht(month.total)}</span>
-			</li>
-		{/each}
-	</ul>
-{/if}
+<div class="grid gap-8">
+	{@render ring('เงินที่ได้รับ', data.income, 'text-in', 'ปีนี้ยังไม่มีเงินที่ได้รับ')}
+	{@render ring('เงินที่ใช้ไป', data.expense, 'text-out', 'ปีนี้ยังไม่มีการใช้เงิน')}
+</div>
