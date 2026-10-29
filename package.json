@@ -27,6 +27,8 @@
 		"#lib/*": "./src/lib/*"
 	},
 	"dependencies": {
-		"@lucide/svelte": "^1.64.0"
+		"@lucide/svelte": "^1.64.0",
+		"@tailwindcss/vite": "^4.3.3",
+		"tailwindcss": "^4.3.3"
 	}
 }

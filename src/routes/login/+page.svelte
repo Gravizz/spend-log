@@ -4,9 +4,9 @@
 	let { form }: PageProps = $props();
 </script>
 
-<div class="login">
+<div class="grid min-h-[calc(100dvh-2rem)] content-center gap-5 pb-8">
 	<h1>เข้าสู่ระบบ</h1>
-	<form method="post" class="stack">
+	<form method="post" class="grid gap-3">
 		<label>
 			ชื่อผู้ใช้
 			<input name="user" autocomplete="username" required />
@@ -16,8 +16,8 @@
 			<input name="password" type="password" autocomplete="current-password" required />
 		</label>
 		{#if form?.error}
-			<p class="error">{form.error}</p>
+			<p class="m-0 rounded-xl bg-error-soft px-3 py-2.5 text-out">{form.error}</p>
 		{/if}
-		<button>เข้าสู่ระบบ</button>
+		<button class="w-full">เข้าสู่ระบบ</button>
 	</form>
 </div>

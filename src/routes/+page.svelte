@@ -13,6 +13,9 @@
 		form?.amount ?? (editing ? (editing.amount_satang / 100).toFixed(2) : '')
 	);
 	const note = $derived(form?.note ?? editing?.note ?? '');
+	const field = 'max-md:scroll-mb-36';
+	const thumb =
+		'max-md:fixed max-md:right-4 max-md:bottom-[calc(4.6rem+env(safe-area-inset-bottom))] max-md:z-30 max-md:w-auto max-md:min-w-36 max-md:flex-none max-md:shadow-[0_0.35rem_0.9rem_oklch(0.28_0.04_230/0.18)] md:flex-1';
 
 	function formatDay(iso: string) {
 		const [year, month, day] = iso.split('-').map(Number);
@@ -23,36 +26,42 @@
 	}
 </script>
 
-<div class="month-nav">
-	<h1>{data.label}</h1>
-	<div class="month-buttons">
-		<a href="?m={data.prev}">ก่อน</a>
-		<a href="?m={data.next}">ถัดไป</a>
+<div class="flex items-center justify-between gap-2">
+	<h1 class="text-start">{data.label}</h1>
+	<div class="flex gap-1.5">
+		<a
+			class="grid size-11 place-items-center rounded-xl border border-line bg-surface no-underline"
+			href="?m={data.prev}">ก่อน</a
+		>
+		<a
+			class="grid size-11 place-items-center rounded-xl border border-line bg-surface no-underline"
+			href="?m={data.next}">ถัดไป</a
+		>
 	</div>
 </div>
 
-<section>
+<section class="mt-3 grid gap-3">
 	<h2>{editing ? 'แก้รายการ' : 'เพิ่มรายการ'}</h2>
 	{#if data.categories.length === 0}
 		<p>ยังไม่มีหมวด <a href="/categories">เพิ่มหมวดก่อน</a></p>
 	{:else}
-		<form method="post" action={editing ? '?/update' : '?/create'} class="stack">
+		<form method="post" action={editing ? '?/update' : '?/create'} class="grid gap-3">
 			{#if editing}
 				<input type="hidden" name="id" value={editing.id} />
 			{/if}
-			<div class="pair">
+			<div class="grid gap-3 sm:grid-cols-2">
 				<label>
 					วันที่
-					<input type="date" name="occurred_on" required value={occurredOn} />
+					<input class={field} type="date" name="occurred_on" required value={occurredOn} />
 				</label>
 				<label>
 					จำนวนเงิน (บาท)
-					<input name="amount" inputmode="decimal" required value={amount} />
+					<input class={field} name="amount" inputmode="decimal" required value={amount} />
 				</label>
 			</div>
 			<label>
 				หมวด
-				<select name="category_id" required>
+				<select class={field} name="category_id" required>
 					<option value="" selected={categoryId === ''}>เลือกหมวด</option>
 					{#each data.categories as category (category.id)}
 						<option value={category.id} selected={String(category.id) === categoryId}>
@@ -63,70 +72,87 @@
 			</label>
 			<label>
 				โน้ต
-				<input name="note" maxlength="200" value={note} />
+				<input class={field} name="note" maxlength="200" value={note} />
 			</label>
 			{#if form?.error}
-				<p class="error">{form.error}</p>
+				<p class="m-0 rounded-xl bg-error-soft px-3 py-2.5 text-out">{form.error}</p>
 			{/if}
-			<div class="actions">
-				<button class="thumb">{editing ? 'บันทึกการแก้' : 'เพิ่มรายการ'}</button>
+			<div class="flex flex-wrap items-center gap-2">
+				<button class={thumb}>{editing ? 'บันทึกการแก้' : 'เพิ่มรายการ'}</button>
 				{#if editing}
-					<a class="quiet" href="?m={data.month}">ยกเลิก</a>
+					<a
+						class="grid min-h-11 place-items-center rounded-xl border border-line bg-transparent px-4 text-accent no-underline"
+						href="?m={data.month}">ยกเลิก</a
+					>
 				{/if}
 			</div>
 		</form>
 	{/if}
 </section>
 
-<section class="tally" aria-label="สรุปเดือนนี้">
+<section class="mt-1 grid gap-1.5 pt-3.5 pb-1" aria-label="สรุปเดือนนี้">
 	<div>
-		<span class="muted">คงเหลือ</span>
-		<strong class={data.net < 0 ? 'out' : 'in'}>{formatBaht(data.net)}</strong>
+		<span class="text-muted">คงเหลือ</span>
+		<strong class="block text-[2rem] leading-tight font-normal {data.net < 0 ? 'text-out' : 'text-in'}">
+			{formatBaht(data.net)}
+		</strong>
 	</div>
-	<div class="tally-side">
-		<span>รับ <b class="in">{formatBaht(data.income)}</b></span>
-		<span>จ่าย <b class="out">{formatBaht(data.expense)}</b></span>
+	<div class="flex flex-wrap gap-x-4 gap-y-1">
+		<span>รับ <b class="text-in">{formatBaht(data.income)}</b></span>
+		<span>จ่าย <b class="text-out">{formatBaht(data.expense)}</b></span>
 	</div>
 </section>
 
 {#if data.byCategory.length > 0}
-	<section>
+	<section class="mt-3 grid gap-3">
 		<h2>แยกตามหมวด</h2>
-		<ul class="plain">
+		<ul class="m-0 list-none p-0">
 			{#each data.byCategory as row (row.id)}
-				<li class="split">
+				<li class="grid grid-cols-[1fr_auto] items-center gap-x-3 border-b border-line py-3.5">
 					<span>{row.name}</span>
-					<span class="{row.kind} amount">{formatBaht(row.total)}</span>
+					<span class="text-[1.15rem] whitespace-nowrap {row.kind === 'in' ? 'text-in' : 'text-out'}">
+						{formatBaht(row.total)}
+					</span>
 				</li>
 			{/each}
 		</ul>
 	</section>
 {/if}
 
-<section>
+<section class="mt-3 grid gap-3">
 	<h2>รายการ</h2>
 	{#if data.entries.length === 0}
-		<p class="muted">เดือนนี้ยังไม่มีรายการ</p>
+		<p class="text-muted">เดือนนี้ยังไม่มีรายการ</p>
 	{:else}
-		<ul class="plain">
+		<ul class="m-0 list-none p-0">
 			{#each data.entries as entry (entry.id)}
-				<li class="entry">
+				<li class="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-0.5 border-b border-line py-3.5">
 					<div>
 						<div>{formatDay(entry.occurred_on)} {entry.name}</div>
-						{#if entry.note}<div class="muted">{entry.note}</div>{/if}
+						{#if entry.note}<div class="text-muted">{entry.note}</div>{/if}
 					</div>
-					<div class="{entry.kind} amount">
+					<div class="text-[1.15rem] whitespace-nowrap {entry.kind === 'in' ? 'text-in' : 'text-out'}">
 						{entry.kind === 'in' ? '+' : '−'}{formatBaht(entry.amount_satang)}
 					</div>
-					<div class="entry-actions">
+					<div class="col-span-full flex justify-end gap-2">
 						<form method="post" action="?/remove">
 							<input type="hidden" name="id" value={entry.id} />
 							<input type="hidden" name="m" value={data.month} />
-							<button class="danger icon" type="submit" aria-label="ลบ" title="ลบ">
+							<button
+								class="grid size-10 min-h-10 place-items-center border-line bg-transparent p-0 text-out [&_svg]:size-5"
+								type="submit"
+								aria-label="ลบ"
+								title="ลบ"
+							>
 								<Trash2 aria-hidden="true" />
 							</button>
 						</form>
-						<a class="quiet icon" href="?m={data.month}&edit={entry.id}" aria-label="แก้" title="แก้">
+						<a
+							class="grid size-10 min-h-10 place-items-center rounded-xl border border-line bg-transparent text-accent no-underline [&_svg]:size-5"
+							href="?m={data.month}&edit={entry.id}"
+							aria-label="แก้"
+							title="แก้"
+						>
 							<Pencil aria-hidden="true" />
 						</a>
 					</div>
