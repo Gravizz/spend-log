@@ -5,18 +5,12 @@
 </script>
 
 <h1>หมวด</h1>
-<form method="post" action="?/create" class="stack">
-	<label>
-		ชื่อ
-		<input name="name" required maxlength="40" />
-	</label>
-	<label>
-		ชนิด
-		<select name="kind">
-			<option value="out">รายจ่าย</option>
-			<option value="in">รายรับ</option>
-		</select>
-	</label>
+<form method="post" action="?/create" class="cat-create">
+	<input name="name" aria-label="ชื่อหมวด" placeholder="ชื่อหมวด" required maxlength="40" />
+	<select name="kind" aria-label="ชนิด">
+		<option value="out">รายจ่าย</option>
+		<option value="in">รายรับ</option>
+	</select>
 	<button class="thumb">เพิ่มหมวด</button>
 </form>
 {#if form?.error}
@@ -32,15 +26,18 @@
 				<span class="chip {category.kind}">{category.kind === 'in' ? 'รายรับ' : 'รายจ่าย'}</span>
 				<form method="post" action="?/rename" class="cat-edit">
 					<input type="hidden" name="id" value={category.id} />
-					<label>
-						ชื่อ
-						<input name="name" value={category.name} required maxlength="40" />
-					</label>
-					<button type="submit">บันทึกชื่อ</button>
+					<input
+						name="name"
+						aria-label="ชื่อ"
+						value={category.name}
+						required
+						maxlength="40"
+					/>
+					<button type="submit">บันทึก</button>
 				</form>
-				<form method="post" action="?/remove">
+				<form method="post" action="?/remove" class="cat-remove">
 					<input type="hidden" name="id" value={category.id} />
-					<button class="danger" type="submit">ลบหมวด</button>
+					<button class="danger" type="submit">ลบ</button>
 				</form>
 			</li>
 		{/each}

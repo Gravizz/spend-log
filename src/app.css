@@ -191,14 +191,38 @@ section { display: grid; gap: 0.7rem; }
 
 .amount { white-space: nowrap; font-size: 1.15rem; }
 
-.cat {
+.cat-create {
 	display: grid;
-	gap: 0.55rem;
-	padding: 0.95rem 0;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 0.4rem;
+	align-items: center;
+}
+
+.cat {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.4rem 0;
 	border-bottom: 1px solid var(--line);
 }
 
-.cat-edit { display: grid; gap: 0.55rem; }
+.cat-edit,
+.cat-remove { display: contents; }
+
+.cat .chip { white-space: nowrap; }
+
+.cat input { flex: 1 1 8rem; width: auto; min-width: 0; }
+
+.cat button {
+	width: auto;
+	min-height: 2.5rem;
+	padding-inline: 0.7rem;
+}
+
+.cat .danger { order: 1; }
+
+.cat-edit button { order: 2; }
 
 .pair { display: grid; gap: 0.7rem; }
 
@@ -286,11 +310,11 @@ ul.plain { list-style: none; margin: 0; padding: 0; }
 
 @media (min-width: 40rem) {
 	.pair { grid-template-columns: 1fr 1fr; }
-	.cat-edit { grid-template-columns: 1fr auto; align-items: end; }
 }
 
 @media (min-width: 48rem) {
 	.app main { padding-bottom: 2rem; }
+	.cat-create { grid-template-columns: minmax(0, 1fr) auto auto; }
 
 	.tabs {
 		position: static;
