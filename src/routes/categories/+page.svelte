@@ -17,7 +17,7 @@
 			<option value="in">รายรับ</option>
 		</select>
 	</label>
-	<button>เพิ่มหมวด</button>
+	<button class="thumb">เพิ่มหมวด</button>
 </form>
 {#if form?.error}
 	<p class="error">{form.error}</p>

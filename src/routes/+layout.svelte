@@ -19,13 +19,13 @@
 			</form>
 		</header>
 		<nav class="tabs">
-			<a href="/" aria-current={page.url.pathname === '/' ? 'page' : undefined}>รายการ</a>
 			<a
 				href="/categories"
 				aria-current={page.url.pathname.startsWith('/categories') ? 'page' : undefined}
 			>
 				หมวด
 			</a>
+			<a href="/" aria-current={page.url.pathname === '/' ? 'page' : undefined}>รายการ</a>
 		</nav>
 	{/if}
 

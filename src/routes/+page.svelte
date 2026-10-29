@@ -22,9 +22,11 @@
 </script>
 
 <div class="month-nav">
-	<a href="?m={data.prev}">ก่อน</a>
 	<h1>{data.label}</h1>
-	<a href="?m={data.next}">ถัดไป</a>
+	<div class="month-buttons">
+		<a href="?m={data.prev}">ก่อน</a>
+		<a href="?m={data.next}">ถัดไป</a>
+	</div>
 </div>
 
 <section>
@@ -65,7 +67,7 @@
 				<p class="error">{form.error}</p>
 			{/if}
 			<div class="actions">
-				<button>{editing ? 'บันทึกการแก้' : 'เพิ่มรายการ'}</button>
+				<button class="thumb">{editing ? 'บันทึกการแก้' : 'เพิ่มรายการ'}</button>
 				{#if editing}
 					<a class="quiet" href="?m={data.month}">ยกเลิก</a>
 				{/if}
@@ -115,12 +117,12 @@
 						{entry.kind === 'in' ? '+' : '−'}{formatBaht(entry.amount_satang)}
 					</div>
 					<div class="entry-actions">
-						<a class="quiet" href="?m={data.month}&edit={entry.id}">แก้</a>
 						<form method="post" action="?/remove">
 							<input type="hidden" name="id" value={entry.id} />
 							<input type="hidden" name="m" value={data.month} />
 							<button class="danger" type="submit">ลบ</button>
 						</form>
+						<a class="quiet" href="?m={data.month}&edit={entry.id}">แก้</a>
 					</div>
 				</li>
 			{/each}
