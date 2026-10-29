@@ -123,13 +123,13 @@
 
 <style>
 	.login {
-		font-family: Karla, Prompt, sans-serif;
+		font-family: Itim, "Leelawadee UI", sans-serif;
 		color: #1c1c17;
 	}
 
 	.login h1 {
 		margin: 0 0 0.375rem;
-		font-family: 'Bricolage Grotesque', Prompt, sans-serif;
+		font-family: Itim, "Leelawadee UI", sans-serif;
 		font-size: 1.75rem;
 		font-weight: 600;
 		line-height: 2.25rem;
