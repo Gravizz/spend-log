@@ -1,0 +1,114 @@
+:root {
+	color-scheme: light;
+	--ink: #1c1915;
+	--muted: #6b645b;
+	--line: #e4ddd2;
+	--paper: #f6f1e8;
+	--card: #fffdf9;
+	--in: #1f7a4d;
+	--out: #a33b32;
+	--accent: #243f36;
+}
+
+* { box-sizing: border-box; }
+
+body {
+	margin: 0;
+	font-family: "Segoe UI", "Leelawadee UI", sans-serif;
+	background: var(--paper);
+	color: var(--ink);
+	line-height: 1.45;
+}
+
+header, main {
+	max-width: 40rem;
+	margin: 0 auto;
+	padding: 1rem 1.25rem;
+}
+
+header {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem 1rem;
+	align-items: center;
+	padding-bottom: 0;
+}
+
+header form { margin-left: auto; }
+
+main { display: grid; gap: 1.25rem; }
+
+h1, h2 { font-size: 1.15rem; margin: 0; }
+
+a { color: var(--accent); }
+
+label { display: grid; gap: 0.25rem; }
+
+input, select, button {
+	font: inherit;
+	padding: 0.45rem 0.55rem;
+	border: 1px solid var(--line);
+	border-radius: 0.35rem;
+	background: white;
+	color: var(--ink);
+}
+
+button {
+	background: var(--accent);
+	color: white;
+	border-color: var(--accent);
+	cursor: pointer;
+}
+
+button.ghost {
+	background: transparent;
+	color: var(--ink);
+}
+
+.stack { display: grid; gap: 0.6rem; }
+
+.cards {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 0.5rem;
+}
+
+.card {
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: 0.5rem;
+	padding: 0.75rem;
+}
+
+.card p { margin: 0; }
+
+.month-nav, .row, .buttons {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+}
+
+.month-nav { justify-content: space-between; }
+
+.row {
+	justify-content: space-between;
+	padding: 0.55rem 0;
+	border-bottom: 1px solid var(--line);
+}
+
+.grow { flex: 1; display: flex; gap: 0.5rem; align-items: center; min-width: 0; }
+
+ul.plain { list-style: none; margin: 0; padding: 0; }
+
+.muted { color: var(--muted); }
+
+.error { color: var(--out); margin: 0; }
+
+.in { color: var(--in); }
+
+.out { color: var(--out); }
+
+@media (max-width: 36rem) {
+	.cards { grid-template-columns: 1fr; }
+	.row { align-items: flex-start; flex-wrap: wrap; }
+}
