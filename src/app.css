@@ -289,6 +289,30 @@ ul.plain { list-style: none; margin: 0; padding: 0; }
 	color: var(--muted);
 }
 
+.logout {
+	position: fixed;
+	z-index: 3;
+	left: max(0.25rem, calc(50% - 16rem));
+	bottom: env(safe-area-inset-bottom);
+}
+
+.logout button {
+	display: grid;
+	place-items: center;
+	width: 3.25rem;
+	min-width: 3.25rem;
+	min-height: 3.25rem;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--muted);
+}
+
+.logout svg {
+	width: 1.35rem;
+	height: 1.35rem;
+}
+
 @media (max-width: 47.99rem) {
 	button.thumb,
 	.stack > button.thumb,
@@ -335,6 +359,19 @@ ul.plain { list-style: none; margin: 0; padding: 0; }
 	.tabs a {
 		min-height: 2.5rem;
 		padding-inline: 0.8rem;
+	}
+
+	.logout {
+		bottom: 0.75rem;
+	}
+
+	.logout button {
+		width: 2.75rem;
+		min-width: 2.75rem;
+		min-height: 2.75rem;
+		border: 1px solid var(--line);
+		border-radius: 0.75rem;
+		background: var(--surface);
 	}
 }
 
