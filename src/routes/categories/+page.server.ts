@@ -14,10 +14,13 @@ function readKind(value: FormDataEntryValue | null): Kind | null {
 
 export function load() {
 	const categories = db
-		.query<{ id: number; name: string; kind: Kind }, []>(
-			'SELECT id, name, kind FROM categories ORDER BY kind, name'
+		.query<{ id: number; name: string; kind: Kind; used: number }, []>(
+			`SELECT c.id, c.name, c.kind, EXISTS(SELECT 1 FROM entries e WHERE e.category_id = c.id) AS used
+			 FROM categories c
+			 ORDER BY c.kind DESC, c.name`
 		)
-		.all();
+		.all()
+		.map((row) => ({ ...row, used: Boolean(row.used) }));
 	return { categories };
 }
 

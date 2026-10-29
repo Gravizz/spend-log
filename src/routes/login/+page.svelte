@@ -11,15 +11,6 @@
 	let showPassword = $state(false);
 </script>
 
-<svelte:head>
-	<link rel="preconnect" href="https://fonts.googleapis.com" />
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-	<link
-		href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=Karla:wght@400;700&family=Prompt:wght@400;600;700&display=swap"
-		rel="stylesheet"
-	/>
-</svelte:head>
-
 <div class="login mx-auto flex w-full max-w-sm flex-col items-center">
 	<div class="relative mb-8 flex items-center justify-center">
 		<div

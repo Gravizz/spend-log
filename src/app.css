@@ -1,18 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-	--font-sans: "Itim", "Leelawadee UI", sans-serif;
-	--color-bg: oklch(0.97 0.012 210);
-	--color-surface: oklch(0.995 0.004 210);
-	--color-ink: oklch(0.28 0.045 230);
-	--color-muted: oklch(0.4 0.03 230);
-	--color-line: oklch(0.88 0.02 210);
-	--color-accent: oklch(0.4 0.1 180);
-	--color-in: oklch(0.4 0.12 155);
-	--color-out: oklch(0.46 0.15 28);
-	--color-in-soft: oklch(0.94 0.03 155);
-	--color-out-soft: oklch(0.94 0.03 28);
-	--color-error-soft: oklch(0.95 0.03 28);
+	--font-sans: "Karla", "Prompt", "Leelawadee UI", sans-serif;
+	--font-display: "Bricolage Grotesque", "Prompt", sans-serif;
+	--color-bg: #fdf9f1;
+	--color-surface: #ffffff;
+	--color-ink: #1c1c17;
+	--color-muted: #55433a;
+	--color-line: #e5dcd3;
+	--color-accent: #9b450f;
+	--color-in: #2f5935;
+	--color-out: #9b450f;
+	--color-in-soft: #caecbf;
+	--color-out-soft: #ffdbcb;
+	--color-error-soft: #fbe7e4;
 }
 
 @layer base {
