@@ -9,13 +9,6 @@ export default defineConfig({
 		noExternal: ['@lucide/svelte']
 	},
 	plugins: [
-		{
-			name: 'bun-sqlite-external',
-			resolveId(id) {
-				// Vite cannot bundle Bun's built-in driver.
-				if (id === 'bun:sqlite') return { id, external: true };
-			}
-		},
 		tailwindcss(),
 		sveltekit({
 			compilerOptions: {
