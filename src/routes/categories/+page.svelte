@@ -11,7 +11,17 @@
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
-	let kind: 'out' | 'in' = $state('out');
+	const editing = $derived(data.editing);
+	let pickedKind = $state<'out' | 'in' | null>(null);
+	let name = $state('');
+
+	$effect(() => {
+		editing?.id;
+		pickedKind = null;
+		name = editing?.name ?? '';
+	});
+
+	const kind = $derived(pickedKind ?? editing?.kind ?? 'out');
 </script>
 
 <section class="flex items-center justify-between gap-4 rounded-3xl border border-[#dcc1b5]/35 bg-[#f7f3eb] p-5">
@@ -45,21 +55,30 @@
 	</div>
 </section>
 
-<section class="mt-4 rounded-3xl border border-[#dcc1b5]/30 bg-white p-5 shadow-xs">
+<section id="category-form" class="mt-4 rounded-3xl border border-[#dcc1b5]/30 bg-white p-5 shadow-xs">
 	<div class="mb-4 flex items-center justify-between gap-2">
 		<div class="flex items-center gap-2.5">
 			<span
 				class="grid size-9 shrink-0 place-items-center rounded-full bg-[#ffdbcb] text-[#9b450f]"
 				aria-hidden="true"
 			>
-				<CirclePlus class="size-5" />
+				{#if editing}
+					<Pencil class="size-5" />
+				{:else}
+					<CirclePlus class="size-5" />
+				{/if}
 			</span>
-			<h2 class="m-0 font-display text-lg font-bold text-[#1c1c17]">เพิ่มหมวดใหม่</h2>
+			<h2 class="m-0 font-display text-lg font-bold text-[#1c1c17]">
+				{editing ? 'แก้หมวด' : 'เพิ่มหมวดใหม่'}
+			</h2>
 		</div>
 		<span class="text-xs text-[#55433a]">ไม่เกิน 40 ตัวอักษร</span>
 	</div>
 
-	<form method="post" action="?/create" class="flex flex-col gap-3.5">
+	<form method="post" action={editing ? '?/rename' : '?/create'} class="flex flex-col gap-3.5">
+		{#if editing}
+			<input type="hidden" name="id" value={editing.id} />
+		{/if}
 		<div class="flex flex-col gap-1.5">
 			<label class="text-xs font-bold text-[#1c1c17]" for="category-name">ชื่อหมวดหมู่</label>
 			<div class="relative flex items-center">
@@ -70,6 +89,7 @@
 					placeholder="เช่น ชานมไข่มุก, ขนมแมว, ค่าเน็ต..."
 					required
 					maxlength="40"
+					bind:value={name}
 					class="h-12 min-h-12 w-full rounded-full border border-[#dcc1b5]/40 bg-[#f7f3eb] pr-11 pl-4 text-sm text-[#1c1c17] placeholder:text-[#897268]/80 focus:border-[#9b450f]/50 focus:bg-[#ece8e0] focus:outline-none"
 				/>
 				<svg
@@ -104,7 +124,8 @@
 						name="kind"
 						value="out"
 						class="sr-only"
-						bind:group={kind}
+						checked={kind === 'out'}
+						onchange={() => (pickedKind = 'out')}
 					/>
 					<ShoppingBag class="size-4" aria-hidden="true" />
 					<span>รายจ่าย</span>
@@ -120,7 +141,8 @@
 						name="kind"
 						value="in"
 						class="sr-only"
-						bind:group={kind}
+						checked={kind === 'in'}
+						onchange={() => (pickedKind = 'in')}
 					/>
 					<PiggyBank class="size-4" aria-hidden="true" />
 					<span>รายรับ</span>
@@ -128,13 +150,23 @@
 			</div>
 		</fieldset>
 
-		<button
-			type="submit"
-			class="mt-0.5 flex h-12 min-h-12 w-full items-center justify-center gap-1.5 rounded-full border-0 bg-[#d97736] text-sm font-bold text-white shadow-xs hover:bg-[#c3672b] hover:brightness-100"
-		>
-			<Plus class="size-4" aria-hidden="true" />
-			<span>เพิ่มหมวดหมู่นี้</span>
-		</button>
+		<div class="mt-0.5 flex flex-wrap items-center gap-2">
+			<button
+				type="submit"
+				class="flex h-12 min-h-12 flex-1 items-center justify-center gap-1.5 rounded-full border-0 bg-[#d97736] text-sm font-bold text-white shadow-xs hover:bg-[#c3672b] hover:brightness-100"
+			>
+				<Plus class="size-4" aria-hidden="true" />
+				<span>{editing ? 'บันทึกการแก้' : 'เพิ่มหมวดหมู่นี้'}</span>
+			</button>
+			{#if editing}
+				<a
+					class="grid min-h-12 place-items-center rounded-full border border-[#dcc1b5]/50 bg-[#f7f3eb] px-4 text-xs font-bold text-[#9b450f] no-underline hover:bg-[#ece8e0]"
+					href="/categories"
+				>
+					ยกเลิก
+				</a>
+			{/if}
+		</div>
 	</form>
 
 	{#if form?.error}
@@ -176,7 +208,7 @@
 		</span>
 	</div>
 	<p class="mt-1.5 mb-3.5 text-xs leading-5 text-[#55433a]">
-		แตะที่ชื่อเพื่อเปลี่ยนชื่อได้ทันที หมวดที่ยังไม่เคยใช้สามารถกดถังขยะเพื่อลบได้เลยนะ
+		กดดินสอเพื่อแก้หมวดด้านบน หมวดที่ยังไม่เคยใช้สามารถกดถังขยะเพื่อลบได้เลยนะ
 	</p>
 
 	{#if data.categories.length === 0}
@@ -187,7 +219,10 @@
 		<ul class="m-0 flex list-none flex-col gap-2.5 p-0">
 			{#each data.categories as category (category.id)}
 				<li
-					class="flex items-center gap-2 rounded-full border border-[#dcc1b5]/35 bg-white p-2 pl-3 shadow-[0_1px_2px_rgba(28,28,23,0.03)]"
+					class="flex items-center gap-2 rounded-full border bg-white p-2 pl-3 shadow-[0_1px_2px_rgba(28,28,23,0.03)] {editing?.id ===
+					category.id
+						? 'border-[#e07a42]/50'
+						: 'border-[#dcc1b5]/35'}"
 				>
 					<span
 						class="shrink-0 rounded-full px-3 py-1 text-xs font-bold whitespace-nowrap {category.kind ===
@@ -197,25 +232,15 @@
 					>
 						{category.kind === 'in' ? 'รายรับ' : 'รายจ่าย'}
 					</span>
-					<form method="post" action="?/rename" class="flex min-w-0 flex-1 items-center gap-2">
-						<input type="hidden" name="id" value={category.id} />
-						<input
-							class="h-10 min-h-10 w-auto min-w-0 flex-1 rounded-full border border-transparent bg-[#f7f3eb] px-4 text-sm text-[#1c1c17] focus:border-[#9b450f]/40 focus:bg-[#ece8e0] focus:outline-none"
-							name="name"
-							aria-label="ชื่อ"
-							value={category.name}
-							required
-							maxlength="40"
-						/>
-						<button
-							class="grid size-10 min-h-10 shrink-0 place-items-center rounded-full border-0 bg-[#f7f3eb] p-0 text-[#55433a] hover:bg-[#ece8e0] hover:brightness-100"
-							type="submit"
-							aria-label="แก้ไข"
-							title="แก้ไข"
-						>
-							<Pencil class="size-4" aria-hidden="true" />
-						</button>
-					</form>
+					<span class="min-w-0 flex-1 truncate px-2 text-sm text-[#1c1c17]">{category.name}</span>
+					<a
+						class="grid size-10 min-h-10 shrink-0 place-items-center rounded-full bg-[#f7f3eb] text-[#55433a] no-underline hover:bg-[#ece8e0]"
+						href="?edit={category.id}#category-form"
+						aria-label="แก้ไข"
+						title="แก้ไข"
+					>
+						<Pencil class="size-4" aria-hidden="true" />
+					</a>
 					{#if category.used}
 						<span
 							class="grid size-10 shrink-0 place-items-center text-[#897268]"
