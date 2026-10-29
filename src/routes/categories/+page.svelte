@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Check from '@lucide/svelte/icons/check';
 	import CirclePlus from '@lucide/svelte/icons/circle-plus';
 	import Leaf from '@lucide/svelte/icons/leaf';
 	import Lock from '@lucide/svelte/icons/lock';
 	import Moon from '@lucide/svelte/icons/moon';
+	import Pencil from '@lucide/svelte/icons/pencil';
 	import PiggyBank from '@lucide/svelte/icons/piggy-bank';
 	import Plus from '@lucide/svelte/icons/plus';
 	import ShoppingBag from '@lucide/svelte/icons/shopping-bag';
@@ -210,10 +210,10 @@
 						<button
 							class="grid size-10 min-h-10 shrink-0 place-items-center rounded-full border-0 bg-[#f7f3eb] p-0 text-[#55433a] hover:bg-[#ece8e0] hover:brightness-100"
 							type="submit"
-							aria-label="บันทึก"
-							title="บันทึก"
+							aria-label="แก้ไข"
+							title="แก้ไข"
 						>
-							<Check class="size-4" aria-hidden="true" />
+							<Pencil class="size-4" aria-hidden="true" />
 						</button>
 					</form>
 					{#if category.used}
