@@ -27,60 +27,6 @@
 	<a href="?m={data.next}">ถัดไป</a>
 </div>
 
-<section class="tally" aria-label="สรุปเดือนนี้">
-	<div>
-		<span class="muted">คงเหลือ</span>
-		<strong class={data.net < 0 ? 'out' : 'in'}>{formatBaht(data.net)}</strong>
-	</div>
-	<div class="tally-side">
-		<span>รับ <b class="in">{formatBaht(data.income)}</b></span>
-		<span>จ่าย <b class="out">{formatBaht(data.expense)}</b></span>
-	</div>
-</section>
-
-{#if data.byCategory.length > 0}
-	<section>
-		<h2>แยกตามหมวด</h2>
-		<ul class="plain">
-			{#each data.byCategory as row (row.id)}
-				<li class="split">
-					<span>{row.name}</span>
-					<span class="{row.kind} amount">{formatBaht(row.total)}</span>
-				</li>
-			{/each}
-		</ul>
-	</section>
-{/if}
-
-<section>
-	<h2>รายการ</h2>
-	{#if data.entries.length === 0}
-		<p class="muted">เดือนนี้ยังไม่มีรายการ เพิ่มรายการแรกด้านล่าง</p>
-	{:else}
-		<ul class="plain">
-			{#each data.entries as entry (entry.id)}
-				<li class="entry">
-					<div>
-						<div>{formatDay(entry.occurred_on)} {entry.name}</div>
-						{#if entry.note}<div class="muted">{entry.note}</div>{/if}
-					</div>
-					<div class="{entry.kind} amount">
-						{entry.kind === 'in' ? '+' : '−'}{formatBaht(entry.amount_satang)}
-					</div>
-					<div class="entry-actions">
-						<a class="quiet" href="?m={data.month}&edit={entry.id}">แก้</a>
-						<form method="post" action="?/remove">
-							<input type="hidden" name="id" value={entry.id} />
-							<input type="hidden" name="m" value={data.month} />
-							<button class="danger" type="submit">ลบ</button>
-						</form>
-					</div>
-				</li>
-			{/each}
-		</ul>
-	{/if}
-</section>
-
 <section>
 	<h2>{editing ? 'แก้รายการ' : 'เพิ่มรายการ'}</h2>
 	{#if data.categories.length === 0}
@@ -125,5 +71,59 @@
 				{/if}
 			</div>
 		</form>
+	{/if}
+</section>
+
+<section class="tally" aria-label="สรุปเดือนนี้">
+	<div>
+		<span class="muted">คงเหลือ</span>
+		<strong class={data.net < 0 ? 'out' : 'in'}>{formatBaht(data.net)}</strong>
+	</div>
+	<div class="tally-side">
+		<span>รับ <b class="in">{formatBaht(data.income)}</b></span>
+		<span>จ่าย <b class="out">{formatBaht(data.expense)}</b></span>
+	</div>
+</section>
+
+{#if data.byCategory.length > 0}
+	<section>
+		<h2>แยกตามหมวด</h2>
+		<ul class="plain">
+			{#each data.byCategory as row (row.id)}
+				<li class="split">
+					<span>{row.name}</span>
+					<span class="{row.kind} amount">{formatBaht(row.total)}</span>
+				</li>
+			{/each}
+		</ul>
+	</section>
+{/if}
+
+<section>
+	<h2>รายการ</h2>
+	{#if data.entries.length === 0}
+		<p class="muted">เดือนนี้ยังไม่มีรายการ</p>
+	{:else}
+		<ul class="plain">
+			{#each data.entries as entry (entry.id)}
+				<li class="entry">
+					<div>
+						<div>{formatDay(entry.occurred_on)} {entry.name}</div>
+						{#if entry.note}<div class="muted">{entry.note}</div>{/if}
+					</div>
+					<div class="{entry.kind} amount">
+						{entry.kind === 'in' ? '+' : '−'}{formatBaht(entry.amount_satang)}
+					</div>
+					<div class="entry-actions">
+						<a class="quiet" href="?m={data.month}&edit={entry.id}">แก้</a>
+						<form method="post" action="?/remove">
+							<input type="hidden" name="id" value={entry.id} />
+							<input type="hidden" name="m" value={data.month} />
+							<button class="danger" type="submit">ลบ</button>
+						</form>
+					</div>
+				</li>
+			{/each}
+		</ul>
 	{/if}
 </section>
