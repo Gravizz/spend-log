@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { formatBaht } from '#lib/money';
+	import { goto } from '$app/navigation';
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import type { PageProps } from './$types';
@@ -29,7 +30,19 @@
 <div
 	class="sticky top-0 z-10 -mx-4 -mt-3.5 mb-1 flex items-center justify-between gap-2 bg-bg px-4 pt-3.5 pb-2"
 >
-	<h1 class="text-start">{data.label}</h1>
+	<div class="relative w-fit">
+		<h1 class="text-start">{data.label}</h1>
+		<input
+			class="absolute inset-0 cursor-pointer opacity-0"
+			type="month"
+			value={data.month}
+			aria-label="เลือกเดือน"
+			onchange={(event) => {
+				const value = event.currentTarget.value;
+				if (/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) goto(`?m=${value}`);
+			}}
+		/>
+	</div>
 	<div class="flex gap-1.5">
 		<a
 			class="grid size-11 place-items-center rounded-xl border border-line bg-surface no-underline"
