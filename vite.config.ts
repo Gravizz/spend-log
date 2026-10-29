@@ -3,6 +3,10 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+	ssr: {
+		// Bun SSR does not compile .svelte files inside this package.
+		noExternal: ['@lucide/svelte']
+	},
 	plugins: [
 		{
 			name: 'bun-sqlite-external',

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Check from '@lucide/svelte/icons/check';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
@@ -34,31 +36,13 @@
 						maxlength="40"
 					/>
 					<button class="icon" type="submit" aria-label="บันทึก" title="บันทึก">
-						<svg viewBox="0 0 24 24" aria-hidden="true">
-							<path
-								d="M5 12.5 9.5 17 19 7"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
+						<Check aria-hidden="true" />
 					</button>
 				</form>
 				<form method="post" action="?/remove" class="cat-remove">
 					<input type="hidden" name="id" value={category.id} />
 					<button class="danger icon" type="submit" aria-label="ลบ" title="ลบ">
-						<svg viewBox="0 0 24 24" aria-hidden="true">
-							<path
-								d="M4 7h16M9 7V5h6v2M8 7l1 12h6l1-12"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
+						<Trash2 aria-hidden="true" />
 					</button>
 				</form>
 			</li>

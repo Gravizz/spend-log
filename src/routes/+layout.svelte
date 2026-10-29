@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import LogOut from '@lucide/svelte/icons/log-out';
 	import type { LayoutProps } from './$types';
 	import '../app.css';
 
@@ -18,16 +19,7 @@
 		<nav class="tabs">
 			<form class="logout" method="post" action="/logout">
 				<button type="submit" aria-label="ออกจากระบบ" title="ออกจากระบบ">
-					<svg viewBox="0 0 24 24" aria-hidden="true">
-						<path
-							d="M10 4H6v16h4M10 12h9M15 8l4 4-4 4"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-					</svg>
+					<LogOut aria-hidden="true" />
 				</button>
 			</form>
 			<a

@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { formatBaht } from '#lib/money';
+	import Pencil from '@lucide/svelte/icons/pencil';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
@@ -120,9 +122,13 @@
 						<form method="post" action="?/remove">
 							<input type="hidden" name="id" value={entry.id} />
 							<input type="hidden" name="m" value={data.month} />
-							<button class="danger" type="submit">ลบ</button>
+							<button class="danger icon" type="submit" aria-label="ลบ" title="ลบ">
+								<Trash2 aria-hidden="true" />
+							</button>
 						</form>
-						<a class="quiet" href="?m={data.month}&edit={entry.id}">แก้</a>
+						<a class="quiet icon" href="?m={data.month}&edit={entry.id}" aria-label="แก้" title="แก้">
+							<Pencil aria-hidden="true" />
+						</a>
 					</div>
 				</li>
 			{/each}
