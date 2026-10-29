@@ -514,7 +514,7 @@
 						>
 							<Pencil class="size-4" aria-hidden="true" />
 						</a>
-						<form method="post" action="?/remove" class="contents">
+						<form method="post" action="?/remove" class="shrink-0">
 							<input type="hidden" name="id" value={entry.id} />
 							<input type="hidden" name="m" value={data.month} />
 							<button

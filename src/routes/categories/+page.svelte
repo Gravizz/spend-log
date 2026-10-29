@@ -197,7 +197,7 @@
 					>
 						{category.kind === 'in' ? 'รายรับ' : 'รายจ่าย'}
 					</span>
-					<form method="post" action="?/rename" class="contents">
+					<form method="post" action="?/rename" class="flex min-w-0 flex-1 items-center gap-2">
 						<input type="hidden" name="id" value={category.id} />
 						<input
 							class="h-10 min-h-10 w-auto min-w-0 flex-1 rounded-full border border-transparent bg-[#f7f3eb] px-4 text-sm text-[#1c1c17] focus:border-[#9b450f]/40 focus:bg-[#ece8e0] focus:outline-none"
@@ -225,7 +225,7 @@
 							<Lock class="size-4" aria-hidden="true" />
 						</span>
 					{:else}
-						<form method="post" action="?/remove" class="contents">
+						<form method="post" action="?/remove" class="shrink-0">
 							<input type="hidden" name="id" value={category.id} />
 							<button
 								class="grid size-10 min-h-10 shrink-0 place-items-center rounded-full border-0 bg-[#f7f3eb] p-0 text-[#55433a] hover:bg-[#fbe7e4] hover:text-[#933b2b] hover:brightness-100"
