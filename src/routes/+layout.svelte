@@ -16,9 +16,6 @@
 
 <div>
 	{#if data.authed}
-		<header class="mx-auto flex max-w-lg items-center px-4 pt-3.5 pb-1">
-			<strong class="text-[1.35rem]">บันทึก</strong>
-		</header>
 		<nav
 			class="fixed inset-x-0 bottom-0 z-20 mx-auto flex max-w-lg justify-end gap-1 border-t border-line bg-surface px-3 pb-[env(safe-area-inset-bottom)] md:static md:border-0 md:bg-transparent md:px-4 md:pb-0"
 		>
@@ -49,7 +46,7 @@
 
 	<main
 		class="mx-auto max-w-lg px-4 {data.authed
-			? 'pt-2 pb-[calc(8.4rem+env(safe-area-inset-bottom))] md:pb-8'
+			? 'pt-3.5 pb-[calc(8.4rem+env(safe-area-inset-bottom))] md:pb-8'
 			: 'pt-4 pb-8'}"
 	>
 		{@render children()}

@@ -26,7 +26,9 @@
 	}
 </script>
 
-<div class="flex items-center justify-between gap-2">
+<div
+	class="sticky top-0 z-10 -mx-4 -mt-3.5 mb-1 flex items-center justify-between gap-2 bg-bg px-4 pt-3.5 pb-2"
+>
 	<h1 class="text-start">{data.label}</h1>
 	<div class="flex gap-1.5">
 		<a
