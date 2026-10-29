@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { satangToInputBaht } from '#lib/money';
 	import ArrowDownLeft from '@lucide/svelte/icons/arrow-down-left';
 	import ArrowUpRight from '@lucide/svelte/icons/arrow-up-right';
 	import Banknote from '@lucide/svelte/icons/banknote';
@@ -10,6 +11,7 @@
 	import CirclePlus from '@lucide/svelte/icons/circle-plus';
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
+	import Zap from '@lucide/svelte/icons/zap';
 	import type { PageProps } from './$types';
 
 	const monthNames = [
@@ -32,6 +34,7 @@
 	const editing = $derived(data.editing);
 	let pickedDate = $state<string | null>(null);
 	const occurredOn = $derived(pickedDate ?? form?.occurred_on ?? editing?.occurred_on ?? data.today);
+	const chipOccurredOn = $derived(/^\d{4}-\d{2}-\d{2}$/.test(occurredOn) ? occurredOn : data.today);
 	const dateLabel = $derived(
 		/^\d{4}-\d{2}-\d{2}$/.test(occurredOn) ? formatDay(occurredOn, true) : 'เลือกวัน'
 	);
@@ -66,6 +69,8 @@
 		const filtered = data.categories.filter((c) => c.kind === activeKind);
 		return filtered.length > 0 ? filtered : data.categories;
 	});
+
+	const visibleChips = $derived(data.quickChips.filter((chip) => chip.kind === activeKind));
 
 	const activeCategoryId = $derived.by(() => {
 		if (pickedCategoryId && visibleCategories.some((c) => String(c.id) === pickedCategoryId)) {
@@ -338,6 +343,43 @@
 			ยังไม่มีหมวด <a class="font-bold text-[#9b450f]" href="/categories">เพิ่มหมวดก่อน</a>
 		</p>
 	{:else}
+		{#if !editing && visibleChips.length > 0}
+			<div class="mt-3.5 rounded-2xl bg-[#f7f3eb] p-3" aria-label="ปุ่มลัดรายการที่ใช้บ่อย">
+				<div class="mb-2 flex items-center justify-between gap-2 text-xs">
+					<span class="inline-flex items-center gap-1 font-semibold text-[#55433a]">
+						<Zap class="size-3.5 text-[#e07a42]" aria-hidden="true" />
+						<span>กดซ้ำในคลิกเดียว</span>
+					</span>
+					<span class="text-[0.6875rem] text-[#897268]">ลงวันที่ {formatDay(chipOccurredOn, true)}</span>
+				</div>
+				<div class="flex flex-wrap gap-1.5">
+					{#each visibleChips as chip (`${chip.category_id}:${chip.amount_satang}:${chip.note}`)}
+						<form method="post" action="?/create" class="m-0">
+							<input type="hidden" name="occurred_on" value={chipOccurredOn} />
+							<input type="hidden" name="category_id" value={chip.category_id} />
+							<input type="hidden" name="amount" value={satangToInputBaht(chip.amount_satang)} />
+							<input type="hidden" name="note" value={chip.note} />
+							<button
+								type="submit"
+								class="inline-flex min-h-8 cursor-pointer items-center gap-1.5 rounded-full border border-[#dcc1b5]/45 bg-white px-3 py-1.5 text-xs text-[#1c1c17] shadow-2xs transition-colors hover:border-[#e07a42]/50 hover:bg-[#ffeed4] hover:brightness-100"
+								title="บันทึก {chip.note || chip.name} {formatAmount(chip.amount_satang)} บาท ทันที"
+							>
+								<span aria-hidden="true">{categoryEmoji(chip.name, chip.kind)}</span>
+								<span class="max-w-36 truncate font-semibold">{chip.note || chip.name}</span>
+								<span
+									class="font-display font-bold {chip.kind === 'in'
+										? 'text-[#3b6941]'
+										: 'text-[#9b450f]'}"
+								>
+									{formatAmount(chip.amount_satang)} บ.
+								</span>
+							</button>
+						</form>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
 		<form method="post" action={editing ? '?/update' : '?/create'} class="mt-4 grid gap-3.5">
 			{#if editing}
 				<input type="hidden" name="id" value={editing.id} />

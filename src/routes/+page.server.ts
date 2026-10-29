@@ -1,6 +1,7 @@
 import { bahtToSatang } from '#lib/money';
 import { formatMonth, monthBounds, parseDate, parseMonth, shiftMonth, today } from '#lib/month';
 import { db, type Category, type CategoryTotal, type EntryRow } from '#lib/server/db';
+import { loadQuickChips } from '#lib/server/quick-chips';
 import { fail, redirect } from '@sveltejs/kit';
 
 const categoriesSql = 'SELECT id, name, kind FROM categories ORDER BY kind, name';
@@ -77,6 +78,7 @@ export function load({ url }) {
 		entries,
 		byCategory,
 		categories: categories(),
+		quickChips: loadQuickChips(db),
 		income,
 		expense,
 		net: income - expense,
