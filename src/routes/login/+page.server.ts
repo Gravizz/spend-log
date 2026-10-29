@@ -6,7 +6,8 @@ export const actions = {
 		const data = await request.formData();
 		const user = String(data.get('user') ?? '');
 		const password = String(data.get('password') ?? '');
-		if (!credentialsMatch(user, password)) return fail(401, { error: 'เข้าสู่ระบบไม่ได้' });
+		if (!credentialsMatch(user, password))
+		return fail(401, { error: 'เข้าสู่ระบบไม่ได้ ลองตรวจสอบดูอีกทีนะ' });
 		cookies.set('session', signSession(), sessionCookie(url.protocol));
 		redirect(303, '/');
 	}

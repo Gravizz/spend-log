@@ -14,7 +14,7 @@
 	<title>บันทึกรายรับรายจ่าย</title>
 </svelte:head>
 
-<div>
+<div class={data.authed ? '' : 'min-h-dvh bg-[#fdf9f1]'}>
 	{#if data.authed}
 		<nav
 			class="fixed inset-x-0 bottom-0 z-20 mx-auto flex max-w-lg justify-end gap-1 border-t border-line bg-surface px-3 pb-[env(safe-area-inset-bottom)] md:static md:border-0 md:bg-transparent md:px-4 md:pb-0"
@@ -52,9 +52,9 @@
 	{/if}
 
 	<main
-		class="mx-auto max-w-lg px-4 {data.authed
-			? 'pt-3.5 pb-[calc(8.4rem+env(safe-area-inset-bottom))] md:pb-8'
-			: 'pt-4 pb-8'}"
+		class="mx-auto {data.authed
+			? 'max-w-lg px-4 pt-3.5 pb-[calc(8.4rem+env(safe-area-inset-bottom))] md:pb-8'
+			: 'flex min-h-dvh w-full max-w-md items-center px-5 py-12'}"
 	>
 		{@render children()}
 	</main>
