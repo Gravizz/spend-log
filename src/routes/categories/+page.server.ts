@@ -12,7 +12,7 @@ function readKind(value: FormDataEntryValue | null): Kind | null {
 	return kind === 'in' || kind === 'out' ? kind : null;
 }
 
-export function load() {
+export function load({ url }: { url: URL }) {
 	const categories = db
 		.query<{ id: number; name: string; kind: Kind; used: number }, []>(
 			`SELECT c.id, c.name, c.kind, EXISTS(SELECT 1 FROM entries e WHERE e.category_id = c.id) AS used
@@ -21,7 +21,9 @@ export function load() {
 		)
 		.all()
 		.map((row) => ({ ...row, used: Boolean(row.used) }));
-	return { categories };
+	const editId = Number(url.searchParams.get('edit'));
+	const editing = categories.find((category) => category.id === editId) ?? null;
+	return { categories, editing };
 }
 
 export const actions = {
@@ -42,9 +44,12 @@ export const actions = {
 		const data = await request.formData();
 		const id = Number(data.get('id'));
 		const name = readName(data.get('name'));
-		if (!Number.isInteger(id) || id <= 0 || !name) return fail(400, { error: 'ชื่อหมวดไม่ถูกต้อง' });
+		const kind = readKind(data.get('kind'));
+		if (!Number.isInteger(id) || id <= 0 || !name || !kind) {
+			return fail(400, { error: 'ชื่อหรือชนิดหมวดไม่ถูกต้อง' });
+		}
 		try {
-			const result = db.query('UPDATE categories SET name = ? WHERE id = ?').run(name, id);
+			const result = db.query('UPDATE categories SET name = ?, kind = ? WHERE id = ?').run(name, kind, id);
 			if (Number(result.changes) !== 1) return fail(404, { error: 'ไม่พบหมวด' });
 		} catch (error) {
 			if (isUniqueError(error)) return fail(400, { error: 'มีหมวดนี้อยู่แล้ว' });

@@ -1,280 +1,110 @@
 <script lang="ts">
-	import { donutArcs } from '#lib/donut';
 	import Calendar from '@lucide/svelte/icons/calendar';
 	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
-	import Cloud from '@lucide/svelte/icons/cloud';
-	import Moon from '@lucide/svelte/icons/moon';
-	import PiggyBank from '@lucide/svelte/icons/piggy-bank';
-	import ShoppingBag from '@lucide/svelte/icons/shopping-bag';
+	import YearCashflowChart from '#lib/components/YearCashflowChart.svelte';
+	import { formatBaht } from '#lib/money';
+	import { inclusiveEnd, shiftAnalyticsMonth, type Period } from '#lib/analytics';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-
-	const incomeColors = [
-		'#7e9e76',
-		'#486642',
-		'#7e5700',
-		'#f5bd5d',
-		'#5c8254',
-		'#9ab592',
-		'#a87b14',
-		'#d99f36',
-		'#3a5435',
-		'#6b8c63',
-		'#8c6610',
-		'#e5ae49'
-	];
-
-	const expenseColors = [
-		'#e07a42',
-		'#9b450f',
-		'#ffb692',
-		'#793100',
-		'#511e00',
-		'#c85d24',
-		'#b34e14',
-		'#f29b6e',
-		'#632600',
-		'#873808',
-		'#d97736',
-		'#ffa073'
-	];
-
-	function monthName(month: string) {
-		const [year, index] = month.split('-').map(Number);
-		return new Intl.DateTimeFormat('th-TH-u-ca-gregory', { month: 'long' }).format(
-			new Date(year, index - 1, 1)
-		);
+	const comparison = $derived(data.comparison);
+	const currentMonth = $derived(data.today.slice(0, 7));
+	const monthLabel = $derived(new Intl.DateTimeFormat('th-TH', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${data.month}-01T00:00:00Z`)));
+	const percentFormat = new Intl.NumberFormat('th-TH', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+	function periodLabel(period: Period) {
+		const last = new Date(`${inclusiveEnd(period.end)}T00:00:00Z`);
+		const formatter = new Intl.DateTimeFormat('th-TH', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+		return formatter.formatRange(new Date(`${period.start}T00:00:00Z`), last);
 	}
-
-	function sliceColor(kind: 'in' | 'out', index: number) {
-		const palette = kind === 'in' ? incomeColors : expenseColors;
-		return palette[index % palette.length];
-	}
-
-	function isLightColor(hex: string) {
-		return hex === '#f5bd5d' || hex === '#ffb692' || hex === '#e5ae49' || hex === '#ffa073';
-	}
-
-	function formatAmount(satang: number) {
-		return new Intl.NumberFormat('th-TH', {
-			minimumFractionDigits: satang % 100 === 0 ? 0 : 2,
-			maximumFractionDigits: 2
-		}).format(satang / 100);
-	}
+	const panel = 'rounded-3xl border border-[#dcc1b5]/35 bg-white p-5 shadow-xs';
 </script>
 
-{#snippet ring(
-	kind: 'in' | 'out',
-	title: string,
-	subtitle: string,
-	badge: string,
-	centerLabel: string,
-	listTitle: string,
-	empty: string,
-	months: { month: string; total: number }[]
-)}
-	<section class="rounded-3xl border border-[#dcc1b5]/30 bg-white p-5 shadow-xs">
-		<div class="flex items-center justify-between gap-3">
-			<div class="flex items-center gap-3">
-				<span
-					class="grid size-11 shrink-0 place-items-center rounded-full {kind === 'in'
-						? 'bg-[#caecbf] text-[#2f5935]'
-						: 'bg-[#ffdbcb] text-[#9b450f]'}"
-					aria-hidden="true"
-				>
-					{#if kind === 'in'}
-						<PiggyBank class="size-5" />
-					{:else}
-						<ShoppingBag class="size-5" />
-					{/if}
-				</span>
-				<div>
-					<h2 class="m-0 font-display text-lg font-bold text-[#1c1c17]">{title}</h2>
-					<p
-						class="m-0 text-xs font-semibold {kind === 'in' ? 'text-[#3b6941]' : 'text-[#9b450f]'}"
-					>
-						{subtitle}
-					</p>
-				</div>
-			</div>
-			<span
-				class="shrink-0 rounded-full px-3 py-1 text-xs font-bold {kind === 'in'
-					? 'bg-[#caecbf] text-[#264e2c]'
-					: 'bg-[#ffdbcb] text-[#9b450f]'}"
-			>
-				{badge}
-			</span>
+<div class="flex items-center justify-between gap-2 rounded-full border border-[#dcc1b5]/35 bg-white p-1.5 shadow-xs">
+	{#if data.month > '0001-01'}<a href="?m={shiftAnalyticsMonth(data.month, -1)}" class="grid size-10 shrink-0 place-items-center rounded-full bg-[#f7f3eb] text-muted" aria-label="เดือนก่อน"><ChevronLeft class="size-4" /></a>{:else}<span class="size-10 shrink-0"></span>{/if}
+	<h1 class="m-0 flex min-w-0 items-center gap-2 text-base font-bold"><Calendar class="size-4 shrink-0 text-accent" aria-hidden="true" /><span>{monthLabel}</span></h1>
+	{#if data.month < '9999-12'}<a href="?m={shiftAnalyticsMonth(data.month, 1)}" class="grid size-10 shrink-0 place-items-center rounded-full bg-[#f7f3eb] text-muted" aria-label="เดือนถัดไป"><ChevronRight class="size-4" /></a>{:else}<span class="size-10 shrink-0"></span>{/if}
+</div>
+<div class="mt-2 flex min-h-8 items-center justify-between gap-2 text-xs text-muted">
+	<details class="relative">
+		<summary class="cursor-pointer px-2 py-1 text-accent">เลือกเดือนอื่น</summary>
+		<form method="get" class="absolute top-full left-0 z-10 mt-1 flex w-64 max-w-[calc(100vw-3rem)] gap-2 rounded-2xl border border-line bg-white p-3 shadow-lg">
+			<input type="month" name="m" min="0001-01" max="9999-12" value={data.month} required aria-label="เดือนที่ต้องการดู" class="min-w-0 flex-1 text-sm" />
+			<button type="submit" class="shrink-0 text-sm">ดูสรุป</button>
+		</form>
+	</details>
+	{#if data.month !== currentMonth}<a href="/summary" class="px-2 py-1 font-bold">กลับเดือนนี้</a>{:else}<span class="pr-2">อัปเดตจากรายการที่บันทึก</span>{/if}
+</div>
+
+<section class="mt-3 overflow-hidden rounded-3xl border border-[#e07a42]/25 bg-[#ffeed4] p-5" aria-labelledby="expense-title">
+	<div class="flex items-start justify-between gap-3">
+		<div class="min-w-0 flex-1">
+			<h2 id="expense-title" class="m-0 text-sm font-bold text-accent">{data.period.mode === 'to-date' ? 'เดือนนี้ใช้ไปแล้ว' : data.period.mode === 'future' ? 'รายจ่ายที่บันทึกไว้ล่วงหน้า' : 'รายจ่ายของเดือนนี้'}</h2>
+			<p class="mt-2 mb-1 text-[clamp(1.65rem,7vw,2.4rem)] leading-tight font-bold tracking-tight wrap-anywhere text-[#793100]">{formatBaht(data.expense)}</p>
+			<p class="m-0 text-xs text-muted">{periodLabel(data.period.current)}</p>
 		</div>
+		<img src="/capybara.png" alt="" class="size-14 shrink-0 rounded-full border border-[#dcc1b5]/40 object-cover object-[center_42%]" />
+	</div>
+	<dl class="mt-5 mb-0 grid grid-cols-2 gap-4 border-t border-[#dcc1b5]/50 pt-4">
+		<div class="min-w-0"><dt class="text-xs text-muted">รายรับที่บันทึก</dt><dd class="mt-1 ml-0 text-lg font-bold wrap-anywhere text-in">{formatBaht(data.income)}</dd></div>
+		<div class="min-w-0"><dt class="text-xs text-muted">รายรับหักรายจ่ายที่บันทึก</dt><dd class="mt-1 ml-0 text-lg font-bold wrap-anywhere">{formatBaht(data.net)}</dd></div>
+	</dl>
+	{#if data.period.mode === 'future'}<p class="mt-3 mb-0 text-xs text-muted">เป็นเดือนอนาคต จึงยังไม่เปรียบเทียบกับเดือนก่อน</p>{/if}
+	<a href="/?m={data.month}" class="mt-4 inline-flex items-center gap-1 text-xs font-bold">ดูรายการของเดือนนี้ <ChevronRight class="size-3.5" aria-hidden="true" /></a>
+</section>
 
-		{#if months.length === 0}
-			<p class="mt-6 mb-2 text-center text-sm text-[#55433a]">{empty}</p>
+{#if comparison}
+	<section class="{panel} mt-4" aria-labelledby="comparison-title">
+		<div class="flex flex-wrap items-center justify-between gap-2">
+			<h2 id="comparison-title" class="m-0 text-base font-bold">เทียบรายจ่ายกับเดือนก่อน</h2>
+			<span class="rounded-full bg-[#f7f3eb] px-2.5 py-1 text-[0.65rem] text-muted">{data.period.mode === 'to-date' ? 'เทียบช่วงเดียวกัน' : 'เทียบเต็มเดือน'}</span>
+		</div>
+		{#if comparison.previousTotal === 0 && comparison.currentTotal === 0}
+			<p class="mt-3 mb-0 font-bold text-muted">ยังไม่มีรายจ่ายบันทึกในทั้งสองช่วง</p>
+		{:else if comparison.previousTotal === 0}
+			<p class="mt-3 mb-0 font-bold text-muted">ไม่มีรายจ่ายบันทึกในช่วงก่อน</p>
+			<p class="mt-1 mb-0 text-sm text-muted">ช่วงนี้มีรายจ่าย {formatBaht(comparison.currentTotal)} จึงยังคำนวณเปอร์เซ็นต์เทียบไม่ได้</p>
+		{:else if comparison.delta === 0}
+			<p class="mt-3 mb-0 text-lg font-bold">ยอดรวมเท่าเดิม</p>
 		{:else}
-			{@const arcs = donutArcs(months.map((month) => month.total))}
-			{@const total = months.reduce((sum, month) => sum + month.total, 0)}
-			{@const maxTotal = Math.max(...months.map((month) => month.total), 1)}
-			<div class="relative mx-auto my-5 size-52">
-				<svg viewBox="0 0 42 42" class="size-full" aria-hidden="true">
-					<circle cx="21" cy="21" r="16" fill="none" stroke="#f3efe6" stroke-width="5.5" />
-					<g transform="rotate(-90 21 21)">
-						{#each arcs as arc, index (months[index].month)}
-							<circle
-								cx="21"
-								cy="21"
-								r="16"
-								fill="none"
-								stroke={sliceColor(kind, index)}
-								stroke-width="5.5"
-								stroke-linecap="round"
-								pathLength="100"
-								stroke-dasharray="{arc.length} {100 - arc.length}"
-								stroke-dashoffset={-arc.offset}
-							/>
-						{/each}
-					</g>
-				</svg>
-				<div class=" absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
-					<span class="text-xs text-[#55433a]">{centerLabel}</span>
-					<strong class="mt-0.5 font-display text-2xl leading-tight font-bold text-[#1c1c17]">
-						{formatAmount(total)}
-					</strong>
-					<span class="mt-0.5 text-xs text-[#897268]">บาท</span>
-				</div>
+			<p class="mt-3 mb-1 text-xl font-bold wrap-anywhere {comparison.delta > 0 ? 'text-out' : 'text-in'}">{comparison.delta > 0 ? 'เพิ่มขึ้น' : 'ลดลง'} {formatBaht(Math.abs(comparison.delta))}</p>
+			<p class="m-0 text-sm text-muted">{comparison.delta > 0 ? 'เพิ่ม' : 'ลด'} {percentFormat.format(Math.abs(comparison.percent ?? 0))}% จาก {formatBaht(comparison.previousTotal)}</p>
+		{/if}
+		<div class="mt-3 space-y-1 text-[0.7rem] text-muted"><p class="m-0">ช่วงที่ดู: {periodLabel(data.period.current)}</p><p class="m-0">ช่วงก่อน: {periodLabel(data.period.previous)}</p></div>
+		{#if comparison.drivers.length > 0}
+			<div class="mt-4 border-t border-line pt-3">
+				<p class="mt-0 mb-2 text-xs font-bold text-muted">หมวดที่มีส่วนทำให้ยอด{comparison.delta > 0 ? 'เพิ่ม' : 'ลด'}มากที่สุด</p>
+				<ul class="m-0 list-none space-y-2 p-0">
+					{#each comparison.drivers as driver (driver.id)}
+						<li class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 text-sm"><span class="min-w-0 wrap-anywhere">{driver.name}</span><span class="ml-auto shrink-0 font-bold text-muted">{driver.delta > 0 ? '+' : '−'}{formatBaht(Math.abs(driver.delta))}</span></li>
+					{/each}
+				</ul>
 			</div>
-
-			<div class="mb-2.5 flex items-center justify-between text-xs">
-				<span class="font-bold text-[#1c1c17]">{listTitle} ({months.length} เดือน)</span>
-				<span class="text-[#897268]">แตะเพื่อดูรายการ</span>
-			</div>
-
-			<ul class="m-0 flex list-none flex-col gap-2.5 p-0">
-				{#each months as month, index (month.month)}
-					{@const color = sliceColor(kind, index)}
-					<li>
-						<a
-							href="/?m={month.month}"
-							class="flex items-center gap-3 rounded-full bg-[#f7f3eb] p-2.5 pr-3.5 text-[#1c1c17] no-underline transition-colors hover:bg-[#ece8e0]"
-						>
-							<span
-								class="grid size-9 shrink-0 place-items-center rounded-full text-xs font-bold {isLightColor(
-									color
-								)
-									? 'text-[#1c1c17]'
-									: 'text-white'}"
-								style="background: {color}"
-							>
-								{Number(month.month.slice(5, 7))}
-							</span>
-							<div class="min-w-0 flex-1">
-								<div class="flex items-center gap-1.5 text-sm font-medium text-[#1c1c17]">
-									<span class="truncate">{monthName(month.month)}</span>
-									{#if kind === 'out'}
-										<span
-											class="size-2 shrink-0 rounded-full"
-											style="background: {color}"
-											aria-hidden="true"
-										></span>
-									{/if}
-								</div>
-								<div class="mt-1.5 h-1.5 w-28 max-w-full overflow-hidden rounded-full bg-[#e6e1d6]">
-									<div
-										class="h-full rounded-full"
-										style="width: {Math.max(
-											8,
-											Math.round((month.total / maxTotal) * 100)
-										)}%; background: {color}"
-									></div>
-								</div>
-							</div>
-							<div class="flex shrink-0 items-center gap-1">
-								<span
-									class="font-display text-base font-bold {kind === 'in'
-										? index % 4 >= 2
-											? 'text-[#7e5700]'
-											: 'text-[#3b6941]'
-										: 'text-[#9b450f]'}"
-								>
-									{formatAmount(month.total)}
-								</span>
-								<span class="text-xs text-[#897268]">฿</span>
-								<ChevronRight class="size-4 text-[#897268]" aria-hidden="true" />
-							</div>
-						</a>
-					</li>
-				{/each}
-			</ul>
 		{/if}
 	</section>
-{/snippet}
+{/if}
 
-<div
-	class="flex items-center justify-between gap-2 rounded-full border border-[#dcc1b5]/35 bg-white p-1.5 shadow-xs"
->
-	<a
-		class="grid size-9 place-items-center rounded-full bg-[#f7f3eb] text-[#55433a] no-underline hover:bg-[#ece8e0]"
-		href="?y={data.year - 1}"
-		aria-label="ปีก่อน"
-	>
-		<ChevronLeft aria-hidden="true" class="size-4" />
-	</a>
-	<div class="flex items-center gap-2 rounded-full bg-[#ffeed4] px-4 py-1.5">
-		<Calendar class="size-4 text-[#7e5700]" aria-hidden="true" />
-		<h1 class="m-0 font-display text-base font-bold text-[#1c1c17]">ปี {data.year + 543}</h1>
-		<span class="rounded-full bg-[#f6c467] px-2 py-0.5 text-[0.6875rem] font-bold text-[#5c3d00]">
-			สบายใจ
-		</span>
-	</div>
-	<a
-		class="grid size-9 place-items-center rounded-full bg-[#f7f3eb] text-[#55433a] no-underline hover:bg-[#ece8e0]"
-		href="?y={data.year + 1}"
-		aria-label="ปีถัดไป"
-	>
-		<ChevronRight aria-hidden="true" class="size-4" />
-	</a>
-</div>
+<section class="{panel} mt-4" aria-labelledby="categories-title">
+	<div class="flex items-baseline justify-between gap-3"><h2 id="categories-title" class="m-0 text-base font-bold">เงินไปอยู่หมวดไหนบ้าง</h2><span class="shrink-0 text-xs text-muted">{data.categories.length} หมวด</span></div>
+	<p class="mt-1 mb-4 text-xs text-muted">สัดส่วนจากรายจ่ายในช่วงที่ดู</p>
+	{#if data.categories.length === 0}
+		<p class="my-5 text-center text-sm text-muted">ยังไม่มีรายจ่ายบันทึกในช่วงนี้</p>
+	{:else}
+		<ul class="m-0 list-none space-y-4 p-0">
+			{#each data.categories as category (category.id)}
+				<li>
+					<div class="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-sm"><span class="min-w-0 font-bold wrap-anywhere">{category.name}</span><span class="ml-auto shrink-0 text-accent">{formatBaht(category.total)} <span class="text-[0.7rem] text-muted">· {percentFormat.format(category.total / data.expense * 100)}%</span></span></div>
+					<div class="h-2 overflow-hidden rounded-full bg-[#f3efe6]" aria-hidden="true"><div class="h-full rounded-full bg-[#e07a42]" style:width="{category.total / data.expense * 100}%"></div></div>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+</section>
 
-<div class="mt-4 flex items-center gap-3.5 rounded-3xl border border-[#dcc1b5]/35 bg-[#f7f3eb] p-4">
-	<div class="size-12 shrink-0 overflow-hidden rounded-full border border-[#dcc1b5]/40 bg-white">
-		<img
-			src="/capybara.png"
-			alt="มาสคอตคาปิบาร่า"
-			class="size-full object-cover object-[center_42%]"
-		/>
-	</div>
-	<div>
-		<p class="m-0 flex items-center gap-1.5 text-xs font-bold text-[#9b450f]">
-			บันทึกแบบปล่อยใจ
-			<Cloud class="size-4 text-[#d97736]" aria-hidden="true" />
-		</p>
-		<p class="mt-0.5 mb-0 text-xs text-[#55433a]">ดูยอดตามสบาย ไม่ต้องกดดันตัวเอง</p>
-	</div>
-</div>
-
-<div class="mt-4 grid gap-4">
-	{@render ring(
-		'in',
-		'เงินที่ได้รับ',
-		'ทั้งปีมีเข้าเรื่อยๆ',
-		'รายรับ',
-		'ยอดรวมรับทั้งปี',
-		'เดือนที่มีเงินเข้า',
-		'ปีนี้ยังไม่มีเงินที่ได้รับ',
-		data.income
-	)}
-	{@render ring(
-		'out',
-		'เงินที่ใช้ไป',
-		'ใช้ชีวิตอย่างมีความสุข',
-		'รายจ่าย',
-		'ยอดรวมจ่ายทั้งปี',
-		'เดือนที่มีการจ่าย',
-		'ปีนี้ยังไม่มีการใช้เงิน',
-		data.expense
-	)}
-</div>
-
-<p class="mt-5 mb-0 flex items-center justify-center gap-1.5 text-center text-xs text-[#897268]">
-	<Moon class="size-3.5" aria-hidden="true" />
-	<span>เดือนที่ไม่มีรายการถูกซ่อนไว้เพื่อความสบายตา</span>
-</p>
+<section class="{panel} mt-4" aria-labelledby="year-title">
+	<h2 id="year-title" class="m-0 text-base font-bold">ภาพรวมปี {Number(data.month.slice(0, 4)) + 543}</h2>
+	<p class="mt-1 mb-4 text-xs text-muted">ยอดตามวันที่บันทึก รวมรายการล่วงหน้า</p>
+	<YearCashflowChart months={data.yearMonths} selectedMonth={data.month} />
+	{#if data.month.slice(0, 4) === data.today.slice(0, 4)}<p class="mt-3 mb-0 text-xs text-muted">เดือนปัจจุบันยังไม่ครบเดือน กราฟรวมรายการล่วงหน้า จึงอาจต่างจากยอดถึงวันนี้ด้านบน</p>{/if}
+</section>
+<p class="mt-5 mb-0 text-center text-xs text-muted">สรุปจากรายการที่บันทึก อาจไม่ครอบคลุมการใช้เงินจริงทั้งหมด</p>
