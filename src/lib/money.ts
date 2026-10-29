@@ -7,6 +7,13 @@ export function bahtToSatang(input: string): number | null {
 	return satang;
 }
 
+export function satangToInputBaht(satang: number): string {
+	const whole = Math.trunc(satang / 100);
+	const frac = satang % 100;
+	if (frac === 0) return String(whole);
+	return `${whole}.${String(frac).padStart(2, '0').replace(/0$/, '')}`;
+}
+
 export function formatBaht(satang: number): string {
 	return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(satang / 100);
 }

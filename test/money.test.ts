@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { bahtToSatang } from '../src/lib/money.ts';
+import { bahtToSatang, satangToInputBaht } from '../src/lib/money.ts';
 import { monthBounds, parseDate, parseMonth, shiftMonth, today } from '../src/lib/month.ts';
 
 test('baht to satang', () => {
@@ -9,6 +9,13 @@ test('baht to satang', () => {
 	expect(bahtToSatang('-1')).toBeNull();
 	expect(bahtToSatang('1.234')).toBeNull();
 	expect(bahtToSatang('')).toBeNull();
+});
+
+test('satangToInputBaht formats integer and fractional satang for bahtToSatang round-trip', () => {
+	expect(satangToInputBaht(6000)).toBe('60');
+	expect(satangToInputBaht(10050)).toBe('100.5');
+	expect(satangToInputBaht(10005)).toBe('100.05');
+	expect(bahtToSatang(satangToInputBaht(10005))).toBe(10005);
 });
 
 test('month bounds', () => {
