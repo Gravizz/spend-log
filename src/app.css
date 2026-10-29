@@ -214,10 +214,17 @@ section { display: grid; gap: 0.7rem; }
 
 .cat input { flex: 1 1 8rem; width: auto; min-width: 0; }
 
-.cat button {
-	width: auto;
-	min-height: 2.5rem;
-	padding-inline: 0.7rem;
+.cat button.icon {
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	min-width: 2.5rem;
+	padding: 0;
+}
+
+.cat button.icon svg {
+	width: 1.25rem;
+	height: 1.25rem;
 }
 
 .cat .danger { order: 1; }

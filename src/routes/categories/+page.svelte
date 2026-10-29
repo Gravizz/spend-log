@@ -33,11 +33,33 @@
 						required
 						maxlength="40"
 					/>
-					<button type="submit">บันทึก</button>
+					<button class="icon" type="submit" aria-label="บันทึก" title="บันทึก">
+						<svg viewBox="0 0 24 24" aria-hidden="true">
+							<path
+								d="M5 12.5 9.5 17 19 7"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+						</svg>
+					</button>
 				</form>
 				<form method="post" action="?/remove" class="cat-remove">
 					<input type="hidden" name="id" value={category.id} />
-					<button class="danger" type="submit">ลบ</button>
+					<button class="danger icon" type="submit" aria-label="ลบ" title="ลบ">
+						<svg viewBox="0 0 24 24" aria-hidden="true">
+							<path
+								d="M4 7h16M9 7V5h6v2M8 7l1 12h6l1-12"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+						</svg>
+					</button>
 				</form>
 			</li>
 		{/each}
