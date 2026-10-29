@@ -1,9 +1,14 @@
 <script lang="ts">
 	import { formatBaht } from '#lib/money';
 	import { goto } from '$app/navigation';
+	import ChevronDown from '@lucide/svelte/icons/chevron-down';
+	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
+	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import type { PageProps } from './$types';
+
+	const monthNames = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
 
 	let { data, form }: PageProps = $props();
 
@@ -14,9 +19,22 @@
 		form?.amount ?? (editing ? (editing.amount_satang / 100).toFixed(2) : '')
 	);
 	const note = $derived(form?.note ?? editing?.note ?? '');
+	let open = $state(false);
+	let pickYear = $state(Number(data.month.slice(0, 4)));
 	const field = 'max-md:scroll-mb-36';
 	const thumb =
 		'max-md:fixed max-md:right-4 max-md:bottom-[calc(4.6rem+env(safe-area-inset-bottom))] max-md:z-30 max-md:w-auto max-md:min-w-36 max-md:flex-none max-md:shadow-[0_0.35rem_0.9rem_oklch(0.28_0.04_230/0.18)] md:flex-1';
+
+	function toggleMonth() {
+		open = !open;
+		if (open) pickYear = Number(data.month.slice(0, 4));
+	}
+
+	function chooseMonth(month: number) {
+		open = false;
+		const value = `${pickYear}-${String(month).padStart(2, '0')}`;
+		if (value !== data.month) goto(`?m=${value}`);
+	}
 
 	function formatDay(iso: string) {
 		const [year, month, day] = iso.split('-').map(Number);
@@ -27,22 +45,28 @@
 	}
 </script>
 
-<div
-	class="sticky top-0 z-10 -mx-4 -mt-3.5 mb-1 flex items-center justify-between gap-2 bg-bg px-4 pt-3.5 pb-2"
->
-	<div class="relative w-fit">
-		<h1 class="text-start">{data.label}</h1>
-		<input
-			class="absolute inset-0 cursor-pointer opacity-0"
-			type="month"
-			value={data.month}
-			aria-label="เลือกเดือน"
-			onchange={(event) => {
-				const value = event.currentTarget.value;
-				if (/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) goto(`?m=${value}`);
-			}}
-		/>
-	</div>
+{#if open}
+	<button
+		class="fixed inset-0 z-10 min-h-0 w-auto cursor-default rounded-none border-0 bg-ink/20 p-0"
+		type="button"
+		aria-label="ปิด"
+		onclick={() => (open = false)}
+	></button>
+{/if}
+<div class="sticky top-0 z-20 -mx-4 -mt-3.5 mb-1 bg-bg px-4 pt-3.5 pb-2">
+	<div class="flex items-center justify-between gap-2">
+	<h1 class="text-start">
+		<button
+			class="inline-flex min-h-0 items-center gap-1 border-0 bg-transparent p-0 text-[1.6rem] font-normal text-ink"
+			type="button"
+			aria-expanded={open}
+			aria-haspopup="dialog"
+			onclick={toggleMonth}
+		>
+			{data.label}
+			<ChevronDown aria-hidden="true" class="size-5 text-accent" />
+		</button>
+	</h1>
 	<div class="flex gap-1.5">
 		<a
 			class="grid size-11 place-items-center rounded-xl border border-line bg-surface no-underline"
@@ -53,6 +77,58 @@
 			href="?m={data.next}">ถัดไป</a
 		>
 	</div>
+	</div>
+	{#if open}
+		<div
+			class="absolute inset-x-0 top-full z-20 px-4 pt-1"
+			role="dialog"
+			aria-label="เลือกเดือน"
+			onkeydown={(event) => {
+				if (event.key === 'Escape') open = false;
+			}}
+		>
+			<div
+				class="rounded-2xl border border-line bg-surface p-3 shadow-[0_0.6rem_1.4rem_oklch(0.28_0.04_230/0.16)]"
+			>
+				<div class="flex items-center justify-between gap-2">
+					<p class="text-[1.6rem] leading-none">{pickYear}</p>
+					<div class="flex gap-1.5">
+						<button
+							class="grid size-11 min-h-11 place-items-center border-line bg-bg p-0 text-ink"
+							type="button"
+							aria-label="ปีก่อน"
+							onclick={() => pickYear--}
+						>
+							<ChevronLeft aria-hidden="true" class="size-5" />
+						</button>
+						<button
+							class="grid size-11 min-h-11 place-items-center border-line bg-bg p-0 text-ink"
+							type="button"
+							aria-label="ปีถัดไป"
+							onclick={() => pickYear++}
+						>
+							<ChevronRight aria-hidden="true" class="size-5" />
+						</button>
+					</div>
+				</div>
+				<div class="mt-3 grid grid-cols-4 gap-1.5">
+					{#each monthNames as name, index (name)}
+						{@const value = `${pickYear}-${String(index + 1).padStart(2, '0')}`}
+						<button
+							class="min-h-11 border-transparent px-1 {value === data.month
+								? 'bg-accent text-white'
+								: 'bg-bg text-ink'}"
+							type="button"
+							aria-current={value === data.month ? 'date' : undefined}
+							onclick={() => chooseMonth(index + 1)}
+						>
+							{name}
+						</button>
+					{/each}
+				</div>
+			</div>
+		</div>
+	{/if}
 </div>
 
 <section class="mt-3 grid gap-3">
