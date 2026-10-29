@@ -7,7 +7,7 @@
 	let { children, data }: LayoutProps = $props();
 
 	const tab =
-		'grid min-h-13 min-w-26 place-items-center px-3 text-muted no-underline aria-[current=page]:text-accent aria-[current=page]:shadow-[inset_0_-3px_0_var(--color-accent)] md:min-h-10';
+		'grid min-h-13 min-w-20 place-items-center px-3 text-muted no-underline aria-[current=page]:text-accent aria-[current=page]:shadow-[inset_0_-3px_0_var(--color-accent)] md:min-h-10';
 </script>
 
 <svelte:head>
@@ -33,6 +33,13 @@
 					<LogOut aria-hidden="true" />
 				</button>
 			</form>
+			<a
+				href="/summary"
+				class={tab}
+				aria-current={page.url.pathname.startsWith('/summary') ? 'page' : undefined}
+			>
+				สรุป
+			</a>
 			<a
 				href="/categories"
 				class={tab}
