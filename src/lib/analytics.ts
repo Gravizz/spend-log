@@ -70,3 +70,19 @@ export function compareExpenses(current: CategoryExpense[], previous: CategoryEx
 		.slice(0, 2);
 	return { currentTotal, previousTotal, delta, percent: previousTotal === 0 ? null : delta / previousTotal * 100, drivers };
 }
+
+export function groupEntriesByDay<T extends { occurred_on: string; amount_satang: number; kind: 'in' | 'out' }>(entries: T[]) {
+	const groups = new Map<string, { date: string; income: number; expense: number; net: number; entries: T[] }>();
+	for (const entry of entries) {
+		let group = groups.get(entry.occurred_on);
+		if (!group) {
+			group = { date: entry.occurred_on, income: 0, expense: 0, net: 0, entries: [] };
+			groups.set(entry.occurred_on, group);
+		}
+		if (entry.kind === 'in') group.income += entry.amount_satang;
+		else group.expense += entry.amount_satang;
+		group.net = group.income - group.expense;
+		group.entries.push(entry);
+	}
+	return [...groups.values()];
+}

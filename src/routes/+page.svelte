@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { groupEntriesByDay } from '#lib/analytics';
 	import { satangToInputBaht } from '#lib/money';
 	import ArrowDownLeft from '@lucide/svelte/icons/arrow-down-left';
 	import ArrowUpRight from '@lucide/svelte/icons/arrow-up-right';
@@ -39,11 +40,24 @@
 		/^\d{4}-\d{2}-\d{2}$/.test(occurredOn) ? formatDay(occurredOn, true) : 'เลือกวัน'
 	);
 
+	let filterCategoryId = $state<number | null>(null);
+
 	$effect(() => {
 		editing?.id;
 		form?.occurred_on;
 		pickedDate = null;
 	});
+
+	$effect(() => {
+		data.month;
+		filterCategoryId = null;
+	});
+
+	const filteredEntries = $derived(
+		filterCategoryId ? data.entries.filter((e) => e.category_id === filterCategoryId) : data.entries
+	);
+	const dayGroups = $derived(groupEntriesByDay(filteredEntries));
+
 	const initialCategoryId = $derived(
 		form?.category_id ?? (editing ? String(editing.category_id) : '')
 	);
@@ -285,19 +299,37 @@
 {#if data.byCategory.length > 0}
 	<section class="mt-5">
 		<div class="mb-2 flex items-center justify-between text-xs">
-			<h2 class="m-0 text-xs font-bold text-[#55433a]">หมวดหมู่ที่มีการเคลื่อนไหว</h2>
-			<span class="text-[#897268]">{data.byCategory.length} หมวด</span>
+			<h2 class="m-0 text-xs font-bold text-[#55433a]">หมวดหมู่ที่มีการเคลื่อนไหว (แตะเพื่อกรอง)</h2>
+			{#if filterCategoryId !== null}
+				<button
+					type="button"
+					class="min-h-0 rounded-full border-0 bg-transparent p-0 text-xs font-bold text-[#9b450f] hover:brightness-100"
+					onclick={() => (filterCategoryId = null)}
+				>
+					ดูทั้งหมด ({data.byCategory.length} หมวด)
+				</button>
+			{:else}
+				<span class="text-[#897268]">{data.byCategory.length} หมวด</span>
+			{/if}
 		</div>
 		<ul class="m-0 flex list-none gap-2 overflow-x-auto p-0 pb-1">
 			{#each data.byCategory as row (row.id)}
-				<li
-					class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#dcc1b5]/35 bg-white px-3.5 py-2 text-xs shadow-2xs"
-				>
-					<span aria-hidden="true">{categoryEmoji(row.name, row.kind)}</span>
-					<span class="font-bold text-[#1c1c17]">{row.name}</span>
-					<span class="font-bold {row.kind === 'in' ? 'text-[#3b6941]' : 'text-[#9b450f]'}">
-						{formatAmount(row.total)} บ.
-					</span>
+				{@const active = filterCategoryId === row.id}
+				<li class="shrink-0">
+					<button
+						type="button"
+						aria-pressed={active}
+						onclick={() => (filterCategoryId = active ? null : row.id)}
+						class="inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs shadow-2xs transition-colors hover:brightness-100 {active
+							? 'border-[#e07a42] bg-[#ffeed4] text-[#1c1c17]'
+							: 'border-[#dcc1b5]/35 bg-white text-[#1c1c17] hover:bg-[#f7f3eb]'}"
+					>
+						<span aria-hidden="true">{categoryEmoji(row.name, row.kind)}</span>
+						<span class="font-bold text-[#1c1c17]">{row.name}</span>
+						<span class="font-bold {row.kind === 'in' ? 'text-[#3b6941]' : 'text-[#9b450f]'}">
+							{formatAmount(row.total)} บ.
+						</span>
+					</button>
 				</li>
 			{/each}
 		</ul>
@@ -506,71 +538,84 @@
 <section class="mt-6">
 	<div class="mb-3 flex items-center justify-between">
 		<h2 class="m-0 font-display text-lg font-bold text-[#1c1c17]">รายการล่าสุด</h2>
-		<span class="text-xs text-[#897268]">เรียงล่าสุดก่อน</span>
+		<span class="text-xs text-[#897268]">{filteredEntries.length} รายการ · จัดตามวัน</span>
 	</div>
 
-	{#if data.entries.length === 0}
+	{#if dayGroups.length === 0}
 		<p class="rounded-3xl border border-[#dcc1b5]/30 bg-white p-5 text-center text-sm text-[#55433a]">
 			เดือนนี้ยังไม่มีรายการ
 		</p>
 	{:else}
-		<ul class="m-0 flex list-none flex-col gap-2.5 p-0">
-			{#each data.entries as entry (entry.id)}
-				<li
-					class="flex items-center gap-3 rounded-2xl border border-[#dcc1b5]/30 bg-white p-3.5 shadow-2xs"
-				>
-					<span
-						class="grid size-10 shrink-0 place-items-center rounded-full text-base {entry.kind ===
-						'in'
-							? 'bg-[#caecbf]'
-							: 'bg-[#ffdbcb]'}"
-						aria-hidden="true"
-					>
-						{categoryEmoji(entry.name, entry.kind)}
-					</span>
-
-					<div class="min-w-0 flex-1">
-						<div class="flex items-center gap-1.5 text-sm">
-							<span class="shrink-0 text-xs text-[#55433a]">{formatDay(entry.occurred_on)}</span>
-							<span class="text-xs text-[#897268]" aria-hidden="true">•</span>
-							<strong class="truncate font-bold text-[#1c1c17]">{entry.name}</strong>
-						</div>
-						{#if entry.note}
-							<p class="m-0 truncate text-xs text-[#55433a]">{entry.note}</p>
-						{/if}
-					</div>
-
-					<div class="flex shrink-0 items-center gap-1">
-						<span
-							class="mr-1 font-display text-base font-bold whitespace-nowrap {entry.kind === 'in'
-								? 'text-[#3b6941]'
-								: 'text-[#9b450f]'}"
-						>
-							{entry.kind === 'in' ? '+' : '−'}{formatAmount(entry.amount_satang)}
+		<div class="flex flex-col gap-4">
+			{#each dayGroups as group (group.date)}
+				<div>
+					<div class="mb-1.5 flex items-baseline justify-between px-1 text-xs">
+						<span class="font-bold text-[#55433a]">
+							{formatDay(group.date)}
+							<span class="font-normal text-[#897268]">· {group.entries.length} รายการ</span>
 						</span>
-						<a
-							class="grid size-8 place-items-center rounded-full text-[#55433a] no-underline hover:bg-[#f7f3eb]"
-							href="?m={data.month}&edit={entry.id}"
-							aria-label="แก้"
-							title="แก้"
-						>
-							<Pencil class="size-4" aria-hidden="true" />
-						</a>
-						<form method="post" action="?/remove" class="shrink-0">
-							<input type="hidden" name="id" value={entry.id} />
-							<input type="hidden" name="m" value={data.month} />
-							<button
-								class="grid size-8 min-h-8 place-items-center rounded-full border-0 bg-transparent p-0 text-[#55433a] hover:bg-[#fbe7e4] hover:text-[#933b2b] hover:brightness-100"
-								type="submit"
-								aria-label="ลบ"
-								title="ลบ"
-							>
-								<Trash2 class="size-4" aria-hidden="true" />
-							</button>
-						</form>
+						<span class="font-bold {group.net < 0 ? 'text-[#9b450f]' : 'text-[#3b6941]'}">
+							{group.net < 0 ? '−' : '+'}{formatAmount(Math.abs(group.net))} บ.
+						</span>
 					</div>
-				</li>
+					<ul class="m-0 flex list-none flex-col gap-2 p-0">
+						{#each group.entries as entry (entry.id)}
+							<li
+								class="flex items-center gap-3 rounded-2xl border border-[#dcc1b5]/30 bg-white p-3.5 shadow-2xs"
+							>
+								<span
+									class="grid size-10 shrink-0 place-items-center rounded-full text-base {entry.kind ===
+									'in'
+										? 'bg-[#caecbf]'
+										: 'bg-[#ffdbcb]'}"
+									aria-hidden="true"
+								>
+									{categoryEmoji(entry.name, entry.kind)}
+								</span>
+
+								<div class="min-w-0 flex-1">
+									<div class="flex items-center gap-1.5 text-sm">
+										<strong class="truncate font-bold text-[#1c1c17]">{entry.name}</strong>
+									</div>
+									{#if entry.note}
+										<p class="m-0 truncate text-xs text-[#55433a]">{entry.note}</p>
+									{/if}
+								</div>
+
+								<div class="flex shrink-0 items-center gap-1">
+									<span
+										class="mr-1 font-display text-base font-bold whitespace-nowrap {entry.kind === 'in'
+											? 'text-[#3b6941]'
+											: 'text-[#9b450f]'}"
+									>
+										{entry.kind === 'in' ? '+' : '−'}{formatAmount(entry.amount_satang)}
+									</span>
+									<a
+										class="grid size-8 place-items-center rounded-full text-[#55433a] no-underline hover:bg-[#f7f3eb]"
+										href="?m={data.month}&edit={entry.id}"
+										aria-label="แก้"
+										title="แก้"
+									>
+										<Pencil class="size-4" aria-hidden="true" />
+									</a>
+									<form method="post" action="?/remove" class="shrink-0">
+										<input type="hidden" name="id" value={entry.id} />
+										<input type="hidden" name="m" value={data.month} />
+										<button
+											class="grid size-8 min-h-8 place-items-center rounded-full border-0 bg-transparent p-0 text-[#55433a] hover:bg-[#fbe7e4] hover:text-[#933b2b] hover:brightness-100"
+											type="submit"
+											aria-label="ลบ"
+											title="ลบ"
+										>
+											<Trash2 class="size-4" aria-hidden="true" />
+										</button>
+									</form>
+								</div>
+							</li>
+						{/each}
+					</ul>
+				</div>
 			{/each}
-		</ul>
+		</div>
 	{/if}
 </section>

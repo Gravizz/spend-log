@@ -75,3 +75,72 @@ test('earliest and latest accepted years query only their own month and year', (
 	expect(last.expense).toBe(300);
 	expect(last.yearMonths[11].expense).toBe(300);
 });
+
+test('summary computes pace, daily expenses, weekday vs weekend averages, savings rate, top expenses and category drilldown', () => {
+	// 2026-10-03 is Saturday, 2026-10-04 is Sunday, 2026-10-05 is Monday
+	db.query('INSERT INTO entries (occurred_on, category_id, amount_satang, note) VALUES (?, ?, ?, ?)').run('2026-10-03', 1, 30000, 'บุฟเฟต์เสาร์');
+	db.query('INSERT INTO entries (occurred_on, category_id, amount_satang, note) VALUES (?, ?, ?, ?)').run('2026-10-03', 1, 10000, 'กาแฟเสาร์');
+	db.query('INSERT INTO entries (occurred_on, category_id, amount_satang, note) VALUES (?, ?, ?, ?)').run('2026-10-05', 2, 20000, 'BTS รายสัปดาห์');
+	db.query('INSERT INTO entries (occurred_on, category_id, amount_satang, note) VALUES (?, ?, ?, ?)').run('2026-10-05', 3, 100000, 'เงินเดือน');
+	db.query('INSERT INTO entries (occurred_on, category_id, amount_satang, note) VALUES (?, ?, ?, ?)').run('2026-09-03', 1, 15000, 'เดือนก่อน');
+
+	const result = loadSummary(db, '2026-10', '2026-10-05');
+	expect(result.savingsRate).toBe(40);
+	expect(result.pace).toEqual({
+		daysInMonth: 31,
+		elapsedDays: 5,
+		dailyAverage: 12000,
+		projectedExpense: 372000,
+		activeSpendDays: 2,
+		noSpendDays: 3,
+		weekdayAverage: 6667,
+		weekendAverage: 20000
+	});
+	expect(result.dailyExpenses).toHaveLength(5);
+	expect(result.dailyExpenses[2]).toEqual({
+		date: '2026-10-03',
+		day: 3,
+		total: 40000,
+		count: 2,
+		isWeekend: true
+	});
+	expect(result.dailyExpenses[4]).toEqual({
+		date: '2026-10-05',
+		day: 5,
+		total: 20000,
+		count: 1,
+		isWeekend: false
+	});
+	expect(result.topExpenses.map((e) => ({ amount: e.amount_satang, note: e.note }))).toEqual([
+		{ amount: 30000, note: 'บุฟเฟต์เสาร์' },
+		{ amount: 20000, note: 'BTS รายสัปดาห์' },
+		{ amount: 10000, note: 'กาแฟเสาร์' }
+	]);
+	expect(result.categoryDetails).toEqual([
+		{
+			id: 1,
+			name: 'อาหาร',
+			total: 40000,
+			count: 2,
+			average: 20000,
+			previousTotal: 15000,
+			delta: 25000,
+			entries: [
+				{ id: 2, occurred_on: '2026-10-03', amount_satang: 10000, note: 'กาแฟเสาร์' },
+				{ id: 1, occurred_on: '2026-10-03', amount_satang: 30000, note: 'บุฟเฟต์เสาร์' }
+			]
+		},
+		{
+			id: 2,
+			name: 'เดินทาง',
+			total: 20000,
+			count: 1,
+			average: 20000,
+			previousTotal: 0,
+			delta: 20000,
+			entries: [
+				{ id: 3, occurred_on: '2026-10-05', amount_satang: 20000, note: 'BTS รายสัปดาห์' }
+			]
+		}
+	]);
+});

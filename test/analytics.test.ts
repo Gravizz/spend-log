@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { analyticsPeriod, bangkokToday, compareExpenses, summaryMonth, shiftAnalyticsMonth, inclusiveEnd } from '../src/lib/analytics';
+import { analyticsPeriod, bangkokToday, compareExpenses, groupEntriesByDay, summaryMonth, shiftAnalyticsMonth, inclusiveEnd } from '../src/lib/analytics';
 
 test('all accepted four-digit years preserve padded civil bounds without Date year remapping', () => {
 	expect(shiftAnalyticsMonth('0001-01', -1)).toBe('0000-12');
@@ -63,4 +63,32 @@ test('drivers include missing categories and follow net direction, at most two',
 	expect(result.drivers.map((d) => d.id)).toEqual([1, 4]);
 	expect(compareExpenses([], [{ id: 3, name: 'หายไป', total: 500 }]).drivers[0].delta).toBe(-500);
 	expect(compareExpenses([{ id: 1, name: 'ใหม่', total: 500 }], [{ id: 3, name: 'หายไป', total: 500 }]).drivers).toEqual([]);
+});
+
+test('groupEntriesByDay groups descending entries by date and sums daily income, expense and net', () => {
+	const grouped = groupEntriesByDay([
+		{ id: 3, occurred_on: '2026-10-29', amount_satang: 5000, kind: 'out' as const },
+		{ id: 2, occurred_on: '2026-10-29', amount_satang: 20000, kind: 'in' as const },
+		{ id: 1, occurred_on: '2026-10-28', amount_satang: 8500, kind: 'out' as const }
+	]);
+	expect(grouped).toEqual([
+		{
+			date: '2026-10-29',
+			income: 20000,
+			expense: 5000,
+			net: 15000,
+			entries: [
+				{ id: 3, occurred_on: '2026-10-29', amount_satang: 5000, kind: 'out' },
+				{ id: 2, occurred_on: '2026-10-29', amount_satang: 20000, kind: 'in' }
+			]
+		},
+		{
+			date: '2026-10-28',
+			income: 0,
+			expense: 8500,
+			net: -8500,
+			entries: [{ id: 1, occurred_on: '2026-10-28', amount_satang: 8500, kind: 'out' }]
+		}
+	]);
+	expect(groupEntriesByDay([])).toEqual([]);
 });
