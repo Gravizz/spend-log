@@ -30,7 +30,17 @@
 	let { data, form }: PageProps = $props();
 
 	const editing = $derived(data.editing);
-	const occurredOn = $derived(form?.occurred_on ?? editing?.occurred_on ?? data.today);
+	let pickedDate = $state<string | null>(null);
+	const occurredOn = $derived(pickedDate ?? form?.occurred_on ?? editing?.occurred_on ?? data.today);
+	const dateLabel = $derived(
+		/^\d{4}-\d{2}-\d{2}$/.test(occurredOn) ? formatDay(occurredOn, true) : 'เลือกวัน'
+	);
+
+	$effect(() => {
+		editing?.id;
+		form?.occurred_on;
+		pickedDate = null;
+	});
 	const initialCategoryId = $derived(
 		form?.category_id ?? (editing ? String(editing.category_id) : '')
 	);
@@ -92,11 +102,12 @@
 		return `${name} ${year + 543}`;
 	}
 
-	function formatDay(iso: string) {
+	function formatDay(iso: string, withYear = false) {
 		const [year, month, day] = iso.split('-').map(Number);
 		return new Intl.DateTimeFormat('th-TH-u-ca-gregory', {
 			day: 'numeric',
-			month: 'short'
+			month: 'short',
+			...(withYear ? { year: '2-digit' as const } : {})
 		}).format(new Date(year, month - 1, day));
 	}
 
@@ -333,21 +344,26 @@
 			{/if}
 
 			<div class="grid grid-cols-2 gap-3">
-				<label class="rounded-2xl bg-[#f7f3eb] p-3 text-xs font-semibold text-[#55433a]">
+				<label class="min-w-0 rounded-2xl bg-[#f7f3eb] p-3 text-xs font-semibold text-[#55433a]">
 					<span>วันที่</span>
-					<div class="mt-1 flex items-center gap-1.5">
+					<div
+						class="relative mt-1 flex h-8 min-h-8 min-w-0 items-center gap-1.5 overflow-hidden rounded-lg border border-[#dcc1b5]/40 bg-white/60 px-2 focus-within:border-[#9b450f]/50"
+					>
 						<Calendar class="size-4 shrink-0 text-[#9b450f]" aria-hidden="true" />
+						<span class="min-w-0 truncate text-xs font-semibold text-[#1c1c17]">{dateLabel}</span>
 						<input
-							class="h-8 min-h-8 w-full rounded-lg border border-[#dcc1b5]/40 bg-white/60 px-2 text-xs font-semibold text-[#1c1c17] focus:border-[#9b450f]/50 focus:outline-none max-md:scroll-mb-36"
+							class="absolute inset-0 h-full min-h-0 w-full min-w-0 cursor-pointer opacity-0 max-md:scroll-mb-36"
 							type="date"
 							name="occurred_on"
 							required
+							aria-label="วันที่"
 							value={occurredOn}
+							oninput={(event) => (pickedDate = event.currentTarget.value)}
 						/>
 					</div>
 				</label>
 
-				<label class="rounded-2xl bg-[#f7f3eb] p-3 text-xs font-semibold text-[#55433a]">
+				<label class="min-w-0 rounded-2xl bg-[#f7f3eb] p-3 text-xs font-semibold text-[#55433a]">
 					<span>จำนวนเงิน (บาท)</span>
 					<div class="mt-1 flex items-center gap-1.5">
 						<Banknote class="size-4 shrink-0 text-[#9b450f]" aria-hidden="true" />
