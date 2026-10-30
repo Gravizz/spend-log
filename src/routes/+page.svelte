@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { groupEntriesByDay } from '#lib/analytics';
 	import { satangToInputBaht } from '#lib/money';
+	import DatePicker from '#lib/components/DatePicker.svelte';
 	import ArrowDownLeft from '@lucide/svelte/icons/arrow-down-left';
 	import ArrowUpRight from '@lucide/svelte/icons/arrow-up-right';
 	import Banknote from '@lucide/svelte/icons/banknote';
@@ -36,9 +37,6 @@
 	let pickedDate = $state<string | null>(null);
 	const occurredOn = $derived(pickedDate ?? form?.occurred_on ?? editing?.occurred_on ?? data.today);
 	const chipOccurredOn = $derived(/^\d{4}-\d{2}-\d{2}$/.test(occurredOn) ? occurredOn : data.today);
-	const dateLabel = $derived(
-		/^\d{4}-\d{2}-\d{2}$/.test(occurredOn) ? formatDay(occurredOn, true) : 'เลือกวัน'
-	);
 
 	let filterCategoryId = $state<number | null>(null);
 
@@ -418,25 +416,10 @@
 			{/if}
 
 			<div class="grid grid-cols-2 gap-3">
-				<label class="min-w-0 rounded-2xl bg-[#f7f3eb] p-3 text-xs font-semibold text-[#55433a]">
+				<div class="grid min-w-0 gap-1 rounded-2xl bg-[#f7f3eb] p-3 text-xs font-semibold text-[#55433a]">
 					<span>วันที่</span>
-					<div
-						class="relative mt-1 flex h-8 min-h-8 min-w-0 items-center gap-1.5 overflow-hidden rounded-lg border border-[#dcc1b5]/40 bg-white/60 px-2 focus-within:border-[#9b450f]/50"
-					>
-						<Calendar class="size-4 shrink-0 text-[#9b450f]" aria-hidden="true" />
-						<span class="min-w-0 truncate text-xs font-semibold text-[#1c1c17]">{dateLabel}</span>
-						<input
-							class="absolute inset-0 h-full min-h-0 w-full min-w-0 cursor-pointer opacity-0 max-md:scroll-mb-36"
-							type="date"
-							name="occurred_on"
-							required
-							aria-label="วันที่"
-							value={occurredOn}
-							onclick={(event) => event.currentTarget.showPicker?.()}
-							oninput={(event) => (pickedDate = event.currentTarget.value)}
-						/>
-					</div>
-				</label>
+					<DatePicker value={occurredOn} today={data.today} onchange={(date) => (pickedDate = date)} />
+				</div>
 
 				<label class="min-w-0 rounded-2xl bg-[#f7f3eb] p-3 text-xs font-semibold text-[#55433a]">
 					<span>จำนวนเงิน (บาท)</span>
