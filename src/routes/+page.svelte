@@ -432,6 +432,7 @@
 							required
 							aria-label="วันที่"
 							value={occurredOn}
+							onclick={(event) => event.currentTarget.showPicker?.()}
 							oninput={(event) => (pickedDate = event.currentTarget.value)}
 						/>
 					</div>
